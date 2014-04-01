@@ -47,6 +47,12 @@ namespace Game2048
             return tiles;
         }
 
+        public bool IsDead()
+        {
+            if (HasOpenTiles()) return false;
+            return (GetLegalMoves().Count() == 0);
+        }
+
         public List<Direction> GetLegalMoves()
         {
             List<Direction> legal = new List<Direction>();
@@ -90,7 +96,7 @@ namespace Game2048
                         if (row[x] == val) {
                             bMoved = true;
                             ++row[x];
-                            score += (2 << row[x]);
+                            score += (1 << row[x]);
                             xbase = x - 1;
                             row[x - 1] = 0;
                         }
@@ -121,7 +127,7 @@ namespace Game2048
                         if (row[x] == val) {
                             bMoved = true;
                             ++row[x];
-                            score += (2 << row[x]);
+                            score += (1 << row[x]);
                             xbase = x + 1;
                             row[x + 1] = 0;
                         }
@@ -151,7 +157,7 @@ namespace Game2048
                         if (board[y][x] == val) {
                             bMoved = true;
                             ++board[y][x];
-                            score += (2 << board[y][x]);
+                            score += (1 << board[y][x]);
                             ybase = y - 1;
                             board[y - 1][x] = 0;
                         }
@@ -181,7 +187,7 @@ namespace Game2048
                         if (board[y][x] == val) {
                             bMoved = true;
                             ++board[y][x];
-                            score += (2 << board[y][x]);
+                            score += (1 << board[y][x]);
                             ybase = y + 1;
                             board[y + 1][x] = 0;
                         }
@@ -230,7 +236,7 @@ namespace Game2048
             for (int y = 0; y < Height; ++y) {
                 for (int x = 0; x < Width; ++x)
                     if (board[y][x] > 0)
-                        Console.Write(" " + (2 << board[y][x]).ToString().PadLeft(4));
+                        Console.Write(" " + (1 << board[y][x]).ToString().PadLeft(4));
                     else
                         Console.Write("    .");
                 Console.WriteLine();
@@ -338,7 +344,7 @@ namespace Game2048
             for (int y = 0; y < Height; ++y) {
                 int[] row = board[y];
                 for (int x = 0; x < Width; ++x)
-                    score += row[x] * (x + y * 1.1 + 1);
+                    score += (1 << row[x]) * (x + y * 1.1 + 1);
             }
             return score;
         }

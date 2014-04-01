@@ -165,7 +165,6 @@ namespace Game2048
         {
             for (int iter = 0; iter < 1; ++iter) {
                 Board board = NewGame();
-
                 while (true) {
                     Board.Direction move = player.FindBestMove(board);
                     if (move == Board.Direction.None) break;
