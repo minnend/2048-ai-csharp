@@ -1,0 +1,167 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Diagnostics;
+using System.IO;
+
+namespace Game2048
+{
+
+
+    class Program
+    {
+        static void Test()
+        {
+            Board b1, b2;
+
+            // Test SlideRight
+            b1 = new Board(4, 1, new int[] { 4, 4, 2, 2 });
+            b2 = new Board(4, 1, new int[] { 0, 0, 8, 4 });
+            Debug.Assert(b1.SlideRight());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(4, 1, new int[] { 2, 2, 2, 2 });
+            b2 = new Board(4, 1, new int[] { 0, 0, 4, 4 });
+            Debug.Assert(b1.SlideRight());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(4, 1, new int[] { 2, 4, 8, 16 });
+            Debug.Assert(!b1.SlideRight());
+
+            b1 = new Board(4, 1, new int[] { 0, 0, 0, 2 });
+            Debug.Assert(!b1.SlideRight());
+
+            // Test SlideLeft
+            b1 = new Board(4, 1, new int[] { 2, 2, 4, 4 });
+            b2 = new Board(4, 1, new int[] { 4, 8, 0, 0 });
+            Debug.Assert(b1.SlideLeft());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(4, 1, new int[] { 2, 2, 2, 2 });
+            b2 = new Board(4, 1, new int[] { 4, 4, 0, 0 });
+            Debug.Assert(b1.SlideLeft());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(4, 1, new int[] { 2, 4, 8, 16 });
+            Debug.Assert(!b1.SlideLeft());
+
+            b1 = new Board(4, 1, new int[] { 2, 0, 0, 0 });
+            Debug.Assert(!b1.SlideLeft());
+
+            // Test SlideUp
+            b1 = new Board(1, 4, new int[] { 2, 2, 4, 4 });
+            b2 = new Board(1, 4, new int[] { 4, 8, 0, 0 });
+            Debug.Assert(b1.SlideUp());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(1, 4, new int[] { 2, 2, 2, 2 });
+            b2 = new Board(1, 4, new int[] { 4, 4, 0, 0 });
+            Debug.Assert(b1.SlideUp());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(1, 4, new int[] { 2, 4, 8, 16 });
+            Debug.Assert(!b1.SlideUp());
+
+            b1 = new Board(1, 4, new int[] { 2, 0, 0, 0 });
+            Debug.Assert(!b1.SlideUp());
+
+            // Test SlideDown
+            b1 = new Board(1, 4, new int[] { 4, 4, 2, 2 });
+            b2 = new Board(1, 4, new int[] { 0, 0, 8, 4 });
+            Debug.Assert(b1.SlideDown());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(1, 4, new int[] { 2, 2, 2, 2 });
+            b2 = new Board(1, 4, new int[] { 0, 0, 4, 4 });
+            Debug.Assert(b1.SlideDown());
+            Debug.Assert(b1.Equals(b2));
+
+            b1 = new Board(1, 4, new int[] { 2, 4, 8, 16 });
+            Debug.Assert(!b1.SlideDown());
+
+            b1 = new Board(1, 4, new int[] { 0, 0, 0, 2 });
+            Debug.Assert(!b1.SlideDown());
+        }
+
+        static Board NewGame()
+        {
+            Board board = new Board(4, 4);
+            board.AddRandomTile();
+            board.AddRandomTile();
+            return board;
+        }
+
+        static void PlayInteractive()
+        {
+            Board board = NewGame();
+            while (true) {
+                Console.WriteLine("Score: {0}", board.Score);
+                board.Print();
+                while (true) {
+                    ConsoleKeyInfo key = Console.ReadKey(true);
+                    if (key.Key == ConsoleKey.LeftArrow) {
+                        if (!board.SlideLeft()) continue;
+                    }
+                    else if (key.Key == ConsoleKey.RightArrow) board.SlideRight();
+                    else if (key.Key == ConsoleKey.UpArrow) board.SlideUp();
+                    else if (key.Key == ConsoleKey.DownArrow) board.SlideDown();
+                    else if (key.Key == ConsoleKey.Q || key.Key == ConsoleKey.Escape) Environment.Exit(0);
+                    else continue;
+                    break;
+                }
+                board.AddRandomTile();
+                Console.WriteLine();
+            }
+        }
+
+        static void EvalRandomPlayer()
+        {
+            using (StreamWriter file = new StreamWriter(@"g:\eval-random-moves.txt", true)) {
+                Random rng = new Random();
+                for (int iter = 0; iter < 900000; ++iter) {
+                    Board board = NewGame();
+                    while (true) {
+                        List<Board.Direction> moves = board.GetLegalMoves();
+                        if (moves.Count == 0) break;
+
+                        board.Slide(moves[rng.Next(moves.Count)]);
+                        board.AddRandomTile();
+                    }
+                    file.WriteLine("{0}  {1}", board.MaxTile, board.Score);
+                    //Console.WriteLine("{0}  {1}", board.MaxTile, board.Score);
+                    if (iter % 1000 == 0) Console.WriteLine("{0}", iter);
+                }
+            }
+        }        
+
+        static void EvalSearchPlayer(SearchPlayer player)
+        {
+            for (int iter = 0; iter < 1; ++iter) {
+                Board board = NewGame();
+
+                while (true) {
+                    Board.Direction move = player.FindBestMove(board);
+                    if (move == Board.Direction.None) break;
+                    board.Slide(move);
+                    board.AddRandomTile();
+                }
+                Console.WriteLine("{0}  {1}", board.MaxTile, board.Score);
+                //if (iter % 1000 == 0) Console.WriteLine("{0}", iter);
+            }
+
+            Console.WriteLine("Press <enter> to exit.");
+            Console.ReadLine();
+        }
+
+        static void Main(string[] args)
+        {
+            Test();
+
+            //PlayInteractive();
+            //EvalRandomPlayer();
+            
+            EvalSearchPlayer(new SearchPlayer());
+        }
+    }
+}
