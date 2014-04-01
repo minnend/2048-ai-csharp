@@ -138,7 +138,7 @@ namespace Game2048
                     foreach (Coord coord in avail) {
                         // 90% chance of adding a 2
                         SearchInfo si = new SearchInfo(parent);
-                        si.board.board[coord.y][coord.x] = 2;
+                        si.board.board[coord.y][coord.x] = 1;
                         si.prob *= prob2;
                         si.expectedScore = EvalBoard(si.board);
                         ++si.depth;
@@ -148,7 +148,7 @@ namespace Game2048
 
                         // 10% chance of adding a 4
                         si = new SearchInfo(parent);
-                        si.board.board[coord.y][coord.x] = 4;
+                        si.board.board[coord.y][coord.x] = 2;
                         si.prob *= prob4;
                         si.expectedScore = EvalBoard(si.board);
                         ++si.depth;
@@ -210,7 +210,7 @@ namespace Game2048
         protected double EvalBoard(Board board, bool bPrint = false)
         {
             double a = (board.Score == 0 ? 0.0 : Math.Log(board.Score));
-            double b = Math.Log(board.MaxTile);
+            double b = board.MaxTile;
             double c = board.NumAvailableTiles;
             double d = board.NumMergeablePairs;
             double e = (double)board.GetCanonical().GetCanonicalScore() / (board.MaxTile);

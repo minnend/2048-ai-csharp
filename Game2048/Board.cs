@@ -89,8 +89,8 @@ namespace Game2048
                         }
                         if (row[x] == val) {
                             bMoved = true;
-                            row[x] += val;
-                            score += row[x];
+                            ++row[x];
+                            score += (2 << row[x]);
                             xbase = x - 1;
                             row[x - 1] = 0;
                         }
@@ -120,8 +120,8 @@ namespace Game2048
                         }
                         if (row[x] == val) {
                             bMoved = true;
-                            row[x] += val;
-                            score += row[x];
+                            ++row[x];
+                            score += (2 << row[x]);
                             xbase = x + 1;
                             row[x + 1] = 0;
                         }
@@ -150,8 +150,8 @@ namespace Game2048
                         }
                         if (board[y][x] == val) {
                             bMoved = true;
-                            board[y][x] += val;
-                            score += board[y][x];
+                            ++board[y][x];
+                            score += (2 << board[y][x]);
                             ybase = y - 1;
                             board[y - 1][x] = 0;
                         }
@@ -180,8 +180,8 @@ namespace Game2048
                         }
                         if (board[y][x] == val) {
                             bMoved = true;
-                            board[y][x] += val;
-                            score += board[y][x];
+                            ++board[y][x];
+                            score += (2 << board[y][x]);
                             ybase = y + 1;
                             board[y + 1][x] = 0;
                         }
@@ -200,7 +200,7 @@ namespace Game2048
 
             int r = rng.Next(tiles.Count);
             Coord tile = tiles[r];
-            int value = (rng.NextDouble() < 0.9 ? 2 : 4);
+            int value = (rng.NextDouble() < 0.9 ? 1 : 2);
             board[tile.y][tile.x] = value;
             return true;
         }
@@ -230,7 +230,7 @@ namespace Game2048
             for (int y = 0; y < Height; ++y) {
                 for (int x = 0; x < Width; ++x)
                     if (board[y][x] > 0)
-                        Console.Write(" " + board[y][x].ToString().PadLeft(4));
+                        Console.Write(" " + (2 << board[y][x]).ToString().PadLeft(4));
                     else
                         Console.Write("    .");
                 Console.WriteLine();
