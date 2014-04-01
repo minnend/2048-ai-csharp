@@ -14,18 +14,17 @@ namespace Game2048
 
         public Board(int w, int h)
         {
-            board = new int[h][];
-            for (int i = 0; i < h; i++) board[i] = new int[w];
+            Width = w;
+            Height = h;
+            NumTiles = Width * Height;
+            board = new int[NumTiles];
             score = 0;
         }
 
         public Board(int w, int h, int[] data)
             : this(w, h)
         {
-            int ix = 0;
-            for (int y = 0; y < h; ++y)
-                for (int x = 0; x < w; ++x)
-                    board[y][x] = data[ix++];
+            Array.Copy(data, board, NumTiles);
         }
 
         public bool HasOpenTiles()
@@ -41,9 +40,10 @@ namespace Game2048
         public List<Coord> GetAvailableTiles()
         {
             List<Coord> tiles = new List<Coord>();
+            int ix = 0;
             for (int y = 0; y < Height; ++y)
                 for (int x = 0; x < Width; ++x)
-                    if (board[y][x] == 0)
+                    if (board[ix++] == 0)
                         tiles.Add(new Coord(x, y));
             return tiles;
         }
@@ -82,24 +82,24 @@ namespace Game2048
         {
             bool bMoved = false;
             for (int y = 0; y < Height; ++y) {
-                int[] row = board[y];
+                int ofs = y * Width;
                 int xbase = Width - 1;
                 for (int x0 = Width - 2; x0 >= 0; --x0) {
-                    int val = row[x0];
+                    int val = board[ofs + x0];
                     if (val == 0) continue;
                     for (int x = x0 + 1; x <= xbase; ++x) {
-                        if (row[x] == 0) {
+                        if (board[ofs + x] == 0) {
                             bMoved = true;
-                            row[x] = val;
-                            row[x - 1] = 0;
+                            board[ofs + x] = val;
+                            board[ofs + x - 1] = 0;
                             continue;
                         }
-                        if (row[x] == val) {
+                        if (board[ofs + x] == val) {
                             bMoved = true;
-                            ++row[x];
-                            score += (1 << row[x]);
+                            ++board[ofs + x];
+                            score += (1 << board[ofs + x]);
                             xbase = x - 1;
-                            row[x - 1] = 0;
+                            board[ofs + x - 1] = 0;
                         }
                         break;
                     }
@@ -113,24 +113,24 @@ namespace Game2048
         {
             bool bMoved = false;
             for (int y = 0; y < Height; ++y) {
-                int[] row = board[y];
+                int ofs = y * Width;
                 int xbase = 0;
                 for (int x0 = 1; x0 < Width; ++x0) {
-                    int val = row[x0];
+                    int val = board[ofs + x0];
                     if (val == 0) continue;
                     for (int x = x0 - 1; x >= xbase; --x) {
-                        if (row[x] == 0) {
+                        if (board[ofs + x] == 0) {
                             bMoved = true;
-                            row[x] = val;
-                            row[x + 1] = 0;
+                            board[ofs + x] = val;
+                            board[ofs + x + 1] = 0;
                             continue;
                         }
-                        if (row[x] == val) {
+                        if (board[ofs + x] == val) {
                             bMoved = true;
-                            ++row[x];
-                            score += (1 << row[x]);
+                            ++board[ofs + x];
+                            score += (1 << board[ofs + x]);
                             xbase = x + 1;
-                            row[x + 1] = 0;
+                            board[ofs + x + 1] = 0;
                         }
                         break;
                     }
@@ -146,21 +146,22 @@ namespace Game2048
             for (int x = 0; x < Width; ++x) {
                 int ybase = Height - 1;
                 for (int y0 = Height - 2; y0 >= 0; --y0) {
-                    int val = board[y0][x];
+                    int val = board[y0 * Width + x];
                     if (val == 0) continue;
                     for (int y = y0 + 1; y <= ybase; ++y) {
-                        if (board[y][x] == 0) {
+                        int ofs = y * Width + x;
+                        if (board[ofs] == 0) {
                             bMoved = true;
-                            board[y][x] = val;
-                            board[y - 1][x] = 0;
+                            board[ofs] = val;
+                            board[ofs - Width] = 0;
                             continue;
                         }
-                        if (board[y][x] == val) {
+                        if (board[ofs] == val) {
                             bMoved = true;
-                            ++board[y][x];
-                            score += (1 << board[y][x]);
+                            ++board[ofs];
+                            score += (1 << board[ofs]);
                             ybase = y - 1;
-                            board[y - 1][x] = 0;
+                            board[ofs - Width] = 0;
                         }
                         break;
                     }
@@ -176,21 +177,22 @@ namespace Game2048
             for (int x = 0; x < Width; ++x) {
                 int ybase = 0;
                 for (int y0 = 1; y0 < Height; ++y0) {
-                    int val = board[y0][x];
+                    int val = board[y0 * Width + x];
                     if (val == 0) continue;
                     for (int y = y0 - 1; y >= ybase; --y) {
-                        if (board[y][x] == 0) {
+                        int ofs = y * Width + x;
+                        if (board[ofs] == 0) {
                             bMoved = true;
-                            board[y][x] = val;
-                            board[y + 1][x] = 0;
+                            board[ofs] = val;
+                            board[ofs + Width] = 0;
                             continue;
                         }
-                        if (board[y][x] == val) {
+                        if (board[ofs] == val) {
                             bMoved = true;
-                            ++board[y][x];
-                            score += (1 << board[y][x]);
+                            ++board[ofs];
+                            score += (1 << board[ofs]);
                             ybase = y + 1;
-                            board[y + 1][x] = 0;
+                            board[ofs + Width] = 0;
                         }
                         break;
                     }
@@ -208,7 +210,7 @@ namespace Game2048
             int r = rng.Next(tiles.Count);
             Coord tile = tiles[r];
             int value = (rng.NextDouble() < 0.9 ? 1 : 2);
-            board[tile.y][tile.x] = value;
+            board[tile.y * Width + tile.x] = value;
             return true;
         }
 
@@ -221,25 +223,25 @@ namespace Game2048
 
         public Board CopyFrom(Board other)
         {
-            for (int y = 0; y < Height; ++y)
-                for (int x = 0; x < Width; ++x)
-                    board[y][x] = other.board[y][x];
+            Width = other.Width;
+            Height = other.Height;
+            NumTiles = other.NumTiles;
+            Array.Copy(other.board, board, NumTiles);
             score = other.score;
             return this;
         }
 
-        public int Width { get { return (board != null && board.Length > 0 ? board[0].Length : 0); } }
-        public int Height { get { return (board == null ? 0 : board.Length); } }
-        public int NumTiles { get { return Width * Height; } }
-
         public void Print()
         {
+            int ofs = 0;
             for (int y = 0; y < Height; ++y) {
-                for (int x = 0; x < Width; ++x)
-                    if (board[y][x] > 0)
-                        Console.Write(" " + (1 << board[y][x]).ToString().PadLeft(4));
+                for (int x = 0; x < Width; ++x) {
+                    if (board[ofs] > 0)
+                        Console.Write(" " + (1 << board[ofs]).ToString().PadLeft(4));
                     else
                         Console.Write("    .");
+                    ++ofs;
+                }
                 Console.WriteLine();
             }
         }
@@ -254,9 +256,8 @@ namespace Game2048
             int hash = 11;
             hash = hash * 17 + Width;
             hash = hash * 19 + Height;
-            for (int y = 0; y < Height; ++y) {
-                for (int x = 0; x < Width; ++x)
-                    hash = unchecked(hash * 17 + board[y][x]);
+            for (int i = 0; i < NumTiles; ++i) {
+                hash = unchecked(hash * 17 + board[i]);
                 hash = hash * 3 + 11;
             }
             return hash;
@@ -265,9 +266,8 @@ namespace Game2048
         public bool Equals(Board b)
         {
             if (b == null || b.Width != Width || b.Height != Height) return false;
-            for (int y = 0; y < Height; ++y)
-                for (int x = 0; x < Width; ++x)
-                    if (board[y][x] != b.board[y][x]) return false;
+            for (int i = 0; i < NumTiles; ++i)
+                if (board[i] != b.board[i]) return false;
             return true;
         }
 
@@ -276,9 +276,8 @@ namespace Game2048
             get
             {
                 int val = 0;
-                for (int y = 0; y < Height; ++y)
-                    for (int x = 0; x < Width; ++x)
-                        if (board[y][x] > val) val = board[y][x];
+                for (int i = 0; i < NumTiles; ++i)
+                    if (board[i] > val) val = board[i];
                 return val;
             }
         }
@@ -288,9 +287,8 @@ namespace Game2048
             get
             {
                 int sum = 0;
-                for (int y = 0; y < Height; ++y)
-                    for (int x = 0; x < Width; ++x)
-                        sum += board[y][x];
+                for (int i = 0; i < NumTiles; ++i)
+                    sum += board[i];
                 return sum;
             }
         }
@@ -301,13 +299,15 @@ namespace Game2048
             {
                 int n = 0;
                 for (int y = 0; y < Height; ++y) {
-                    int[] row = board[y];
+                    int ofs = y * Width;
                     for (int x = 1; x < Width; ++x)
-                        if (row[x - 1] == row[x]) ++n;
+                        if (board[ofs + x - 1] == board[ofs + x]) ++n;
                 }
-                for (int x = 0; x < Width; ++x)
-                    for (int y = 1; y < Height; ++y)
-                        if (board[y - 1][x] == board[y][x]) ++n;
+                for (int y = 1; y < Height; ++y) {
+                    int ofs = y * Width;
+                    for (int x = 0; x < Width; ++x)
+                        if (board[ofs + x - Width] == board[ofs + x]) ++n;
+                }
                 return n;
             }
         }
@@ -315,18 +315,21 @@ namespace Game2048
         public Board GetRotated()
         {
             Board b = Dup();
-            for (int y = 0; y < Height; ++y)
+            for (int y = 0; y < Height; ++y) {
                 for (int x = 0; x < Width; ++x)
-                    b.board[y][x] = board[Width - x - 1][y];
+                    b.board[y * Width + x] = board[(Width - x - 1) * Width + y];
+            }
             return b;
         }
 
         public Board GetHorizontalReflection()
         {
             Board b = Dup();
-            for (int y = 0; y < Height; ++y)
+            for (int y = 0; y < Height; ++y) {
+                int ofs = y * Width;
                 for (int x = 0; x < Width; ++x)
-                    b.board[y][x] = board[y][Width - x - 1];
+                    b.board[ofs + x] = board[ofs + Width - x - 1];
+            }
             return b;
         }
 
@@ -335,7 +338,7 @@ namespace Game2048
             Board b = Dup();
             for (int y = 0; y < Height; ++y)
                 for (int x = 0; x < Width; ++x)
-                    b.board[y][x] = board[Height - y - 1][x];
+                    b.board[y*Width+x] = board[(Height - y - 1)*Width+x];
             return b;
         }
 
@@ -343,9 +346,9 @@ namespace Game2048
         {
             double score = 0;
             for (int y = 0; y < Height; ++y) {
-                int[] row = board[y];
+                int ofs = y * Width;
                 for (int x = 0; x < Width; ++x)
-                    score += (1 << row[x]) * (x + y * 1.1 + 1);
+                    score += (1 << board[ofs + x]) * (x + y * 1.1 + 1);
             }
             return score;
         }
@@ -381,7 +384,9 @@ namespace Game2048
 
         public int Score { get { return score; } }
 
-        public int[][] board;
+        public int Width, Height;
+        public int NumTiles;
+        public int[] board;
         protected int score;
     }
 }

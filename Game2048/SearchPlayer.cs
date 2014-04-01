@@ -152,7 +152,7 @@ namespace Game2048
         protected SearchInfo BuildChild(SearchInfo parent, Coord coord, int val, double prob)
         {
             SearchInfo si = new SearchInfo(parent);
-            si.board.board[coord.y][coord.x] = val;
+            si.board.board[coord.y * si.board.Width + coord.x] = val;
             si.prob *= prob;
             si.expectedScore = EvalBoard(si.board);
             si.isDead = si.board.IsDead();
