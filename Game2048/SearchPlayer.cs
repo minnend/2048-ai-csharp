@@ -74,7 +74,7 @@ namespace Game2048
 
             SearchInfo root = new SearchInfo();
             root.board = startingBoard;
-            root.movesLeft = 3;
+            root.movesLeft = 30;
             root.expectedScore = EvalBoard(root.board);
 
             Queue<SearchInfo> Q = new Queue<SearchInfo>();
@@ -88,12 +88,12 @@ namespace Game2048
 
                 if (parent.depth > maxDepthProcessed) {
                     maxDepthProcessed = parent.depth;
-                    //bestMove = FindBestMove(root);
+                    bestMove = FindBestMove(root);
                 }
                 if (parent.isDead) continue;
                 if (parent.movesLeft <= 0) continue;
 
-                //if (swTotal.ElapsedMilliseconds > 2000) break;
+                if (swTotal.ElapsedMilliseconds > 500) break;
 
                 if (parent.moveNext) { // make a move
                     List<Board.Direction> moves = parent.board.GetLegalMoves();
@@ -129,7 +129,7 @@ namespace Game2048
                     }
                 }
                 else { // add random tile
-                    List<int> avail = parent.board.GetAvailableTiles();
+                    List<int> avail = parent.board.GetAvailableTiles();                    
                     double prob2 = 0.9 / avail.Count;
                     double prob4 = 0.1 / avail.Count;
                     foreach (int ix in avail) {
@@ -138,7 +138,7 @@ namespace Game2048
                     }
                 }
             }
-            bestMove = FindBestMove(root);
+            //bestMove = FindBestMove(root);
 
             Console.WriteLine("Move: {0}  (max depth: {1})", bestMove.dir, maxDepthProcessed);
             Board fb = root.board.Dup();
@@ -176,9 +176,9 @@ namespace Game2048
                 if (mi.count < 1) continue;
                 mi.score /= mi.wsum;
                 mi.death /= mi.wsum;
-                if (mi.depth >= 5)
-                    Console.WriteLine("dir={0}  count={1}  depth={2}  death={3:0.000}  =>  {4:0.000}",
-                        dir, mi.count, mi.depth, mi.death, mi.score);
+                //if (mi.depth >= 5)
+                //    Console.WriteLine("dir={0}  count={1}  depth={2}  death={3:0.000}  =>  {4:0.000}",
+                //        dir, mi.count, mi.depth, mi.death, mi.score);
                 if (bestMove.dir == Board.Direction.None
                     || (mi.death < bestMove.death - 0.01)
                     || (Math.Abs(mi.death - bestMove.death) < 0.01
@@ -218,10 +218,10 @@ namespace Game2048
             if (bPrint)
                 Console.WriteLine("Eval: {0:0.00}, {1:0.00}, {2:0.00}, {3:0.00}, {4:0.00}", a, b, c, d, e);
             return 0.1 * a
-                + 0.5 * b
+                + 0.3 * b
                 + 0.1 * c
                 + 0.1 * d
-                + 0.2 * e;
+                + 0.4 * e;
         }
     }
 }
