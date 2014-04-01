@@ -149,7 +149,7 @@ namespace Game2048
             return bestMove.dir;
         }
 
-        protected SearchInfo BuildChild(SearchInfo parent, Coord coord, int val, double prob)
+        protected SearchInfo BuildChild(SearchInfo parent, Coord coord, byte val, double prob)
         {
             SearchInfo si = new SearchInfo(parent);
             si.board.board[coord.y * si.board.Width + coord.x] = val;

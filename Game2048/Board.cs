@@ -17,11 +17,11 @@ namespace Game2048
             Width = w;
             Height = h;
             NumTiles = Width * Height;
-            board = new int[NumTiles];
+            board = new byte[NumTiles];
             score = 0;
         }
 
-        public Board(int w, int h, int[] data)
+        public Board(int w, int h, byte[] data)
             : this(w, h)
         {
             Array.Copy(data, board, NumTiles);
@@ -34,7 +34,13 @@ namespace Game2048
 
         public int NumAvailableTiles
         {
-            get { return GetAvailableTiles().Count; }
+            get
+            {
+                int n = 0;
+                for (int i = 0; i < NumTiles; ++i)
+                    if (board[i] == 0) ++n;
+                return n;
+            }
         }
 
         public List<Coord> GetAvailableTiles()
@@ -85,7 +91,7 @@ namespace Game2048
                 int ofs = y * Width;
                 int xbase = Width - 1;
                 for (int x0 = Width - 2; x0 >= 0; --x0) {
-                    int val = board[ofs + x0];
+                    byte val = board[ofs + x0];
                     if (val == 0) continue;
                     for (int x = x0 + 1; x <= xbase; ++x) {
                         if (board[ofs + x] == 0) {
@@ -116,7 +122,7 @@ namespace Game2048
                 int ofs = y * Width;
                 int xbase = 0;
                 for (int x0 = 1; x0 < Width; ++x0) {
-                    int val = board[ofs + x0];
+                    byte val = board[ofs + x0];
                     if (val == 0) continue;
                     for (int x = x0 - 1; x >= xbase; --x) {
                         if (board[ofs + x] == 0) {
@@ -146,7 +152,7 @@ namespace Game2048
             for (int x = 0; x < Width; ++x) {
                 int ybase = Height - 1;
                 for (int y0 = Height - 2; y0 >= 0; --y0) {
-                    int val = board[y0 * Width + x];
+                    byte val = board[y0 * Width + x];
                     if (val == 0) continue;
                     for (int y = y0 + 1; y <= ybase; ++y) {
                         int ofs = y * Width + x;
@@ -177,7 +183,7 @@ namespace Game2048
             for (int x = 0; x < Width; ++x) {
                 int ybase = 0;
                 for (int y0 = 1; y0 < Height; ++y0) {
-                    int val = board[y0 * Width + x];
+                    byte val = board[y0 * Width + x];
                     if (val == 0) continue;
                     for (int y = y0 - 1; y >= ybase; --y) {
                         int ofs = y * Width + x;
@@ -209,7 +215,7 @@ namespace Game2048
 
             int r = rng.Next(tiles.Count);
             Coord tile = tiles[r];
-            int value = (rng.NextDouble() < 0.9 ? 1 : 2);
+            byte value = (byte)(rng.NextDouble() < 0.9 ? 1 : 2);
             board[tile.y * Width + tile.x] = value;
             return true;
         }
@@ -338,7 +344,7 @@ namespace Game2048
             Board b = Dup();
             for (int y = 0; y < Height; ++y)
                 for (int x = 0; x < Width; ++x)
-                    b.board[y*Width+x] = board[(Height - y - 1)*Width+x];
+                    b.board[y * Width + x] = board[(Height - y - 1) * Width + x];
             return b;
         }
 
@@ -386,7 +392,7 @@ namespace Game2048
 
         public int Width, Height;
         public int NumTiles;
-        public int[] board;
+        public byte[] board;
         protected int score;
     }
 }

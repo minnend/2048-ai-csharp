@@ -16,97 +16,97 @@ namespace Game2048
             Board b1, b2;
 
             // Test SlideRight
-            b1 = new Board(4, 1, new int[] { 2, 2, 1, 1 });
-            b2 = new Board(4, 1, new int[] { 0, 0, 3, 2 });
+            b1 = new Board(4, 1, new byte[] { 2, 2, 1, 1 });
+            b2 = new Board(4, 1, new byte[] { 0, 0, 3, 2 });
             Debug.Assert(b1.SlideRight());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(4, 1, new int[] { 1, 1, 1, 1 });
-            b2 = new Board(4, 1, new int[] { 0, 0, 2, 2 });
+            b1 = new Board(4, 1, new byte[] { 1, 1, 1, 1 });
+            b2 = new Board(4, 1, new byte[] { 0, 0, 2, 2 });
             Debug.Assert(b1.SlideRight());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(4, 1, new int[] { 1, 2, 3, 4 });
+            b1 = new Board(4, 1, new byte[] { 1, 2, 3, 4 });
             Debug.Assert(!b1.SlideRight());
 
-            b1 = new Board(4, 1, new int[] { 0, 0, 0, 1 });
+            b1 = new Board(4, 1, new byte[] { 0, 0, 0, 1 });
             Debug.Assert(!b1.SlideRight());
 
             // Test SlideLeft
-            b1 = new Board(4, 1, new int[] { 1, 1, 2, 2 });
-            b2 = new Board(4, 1, new int[] { 2, 3, 0, 0 });
+            b1 = new Board(4, 1, new byte[] { 1, 1, 2, 2 });
+            b2 = new Board(4, 1, new byte[] { 2, 3, 0, 0 });
             Debug.Assert(b1.SlideLeft());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(4, 1, new int[] { 1, 1, 1, 1 });
-            b2 = new Board(4, 1, new int[] { 2, 2, 0, 0 });
+            b1 = new Board(4, 1, new byte[] { 1, 1, 1, 1 });
+            b2 = new Board(4, 1, new byte[] { 2, 2, 0, 0 });
             Debug.Assert(b1.SlideLeft());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(4, 1, new int[] { 1, 2, 3, 4 });
+            b1 = new Board(4, 1, new byte[] { 1, 2, 3, 4 });
             Debug.Assert(!b1.SlideLeft());
 
-            b1 = new Board(4, 1, new int[] { 1, 0, 0, 0 });
+            b1 = new Board(4, 1, new byte[] { 1, 0, 0, 0 });
             Debug.Assert(!b1.SlideLeft());
 
             // Test SlideUp
-            b1 = new Board(1, 4, new int[] { 1, 1, 2, 2 });
-            b2 = new Board(1, 4, new int[] { 2, 3, 0, 0 });
+            b1 = new Board(1, 4, new byte[] { 1, 1, 2, 2 });
+            b2 = new Board(1, 4, new byte[] { 2, 3, 0, 0 });
             Debug.Assert(b1.SlideUp());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(1, 4, new int[] { 1, 1, 1, 1 });
-            b2 = new Board(1, 4, new int[] { 2, 2, 0, 0 });
+            b1 = new Board(1, 4, new byte[] { 1, 1, 1, 1 });
+            b2 = new Board(1, 4, new byte[] { 2, 2, 0, 0 });
             Debug.Assert(b1.SlideUp());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(1, 4, new int[] { 1, 2, 3, 4 });
+            b1 = new Board(1, 4, new byte[] { 1, 2, 3, 4 });
             Debug.Assert(!b1.SlideUp());
 
-            b1 = new Board(1, 4, new int[] { 1, 0, 0, 0 });
+            b1 = new Board(1, 4, new byte[] { 1, 0, 0, 0 });
             Debug.Assert(!b1.SlideUp());
 
             // Test SlideDown
-            b1 = new Board(1, 4, new int[] { 2, 2, 1, 1 });
-            b2 = new Board(1, 4, new int[] { 0, 0, 3, 2 });
+            b1 = new Board(1, 4, new byte[] { 2, 2, 1, 1 });
+            b2 = new Board(1, 4, new byte[] { 0, 0, 3, 2 });
             Debug.Assert(b1.SlideDown());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(1, 4, new int[] { 1, 1, 1, 1 });
-            b2 = new Board(1, 4, new int[] { 0, 0, 2, 2 });
+            b1 = new Board(1, 4, new byte[] { 1, 1, 1, 1 });
+            b2 = new Board(1, 4, new byte[] { 0, 0, 2, 2 });
             Debug.Assert(b1.SlideDown());
             Debug.Assert(b1.Equals(b2));
 
-            b1 = new Board(1, 4, new int[] { 1, 2, 3, 4 });
+            b1 = new Board(1, 4, new byte[] { 1, 2, 3, 4 });
             Debug.Assert(!b1.SlideDown());
 
-            b1 = new Board(1, 4, new int[] { 0, 0, 0, 1 });
+            b1 = new Board(1, 4, new byte[] { 0, 0, 0, 1 });
             Debug.Assert(!b1.SlideDown());
 
             // Test board rotation
-            b1 = new Board(3, 3, new int[] { 1, 2, 3,
-                                             4, 5, 6,
-                                             7, 8, 9 });
-            b2 = new Board(3, 3, new int[] { 7, 4, 1,
-                                             8, 5, 2,
-                                             9, 6, 3 });
+            b1 = new Board(3, 3, new byte[] { 1, 2, 3,
+                                              4, 5, 6,
+                                              7, 8, 9 });
+            b2 = new Board(3, 3, new byte[] { 7, 4, 1,
+                                              8, 5, 2,
+                                              9, 6, 3 });
             Debug.Assert(b1.GetRotated().Equals(b2));
 
             // Test canonicalization
-            b1 = new Board(3, 3, new int[] { 1, 2, 3,
-                                             4, 5, 6,
-                                             7, 8, 9 });
-            b2 = new Board(3, 3, new int[] { 7, 4, 1,
-                                             8, 5, 2,
-                                             9, 6, 3 });
+            b1 = new Board(3, 3, new byte[] { 1, 2, 3,
+                                              4, 5, 6,
+                                              7, 8, 9 });
+            b2 = new Board(3, 3, new byte[] { 7, 4, 1,
+                                              8, 5, 2,
+                                              9, 6, 3 });
             Debug.Assert(b1.GetCanonical().Equals(b2.GetCanonical()));
 
-            b1 = new Board(3, 3, new int[] { 0, 2, 0,
-                                             0, 0, 0,
-                                             0, 0, 2 });
-            b2 = new Board(3, 3, new int[] { 0, 2, 0,
-                                             0, 0, 0,
-                                             2, 0, 0 });
+            b1 = new Board(3, 3, new byte[] { 0, 2, 0,
+                                              0, 0, 0,
+                                              0, 0, 2 });
+            b2 = new Board(3, 3, new byte[] { 0, 2, 0,
+                                              0, 0, 0,
+                                              2, 0, 0 });
             Debug.Assert(b1.GetCanonical().Equals(b2.GetCanonical()));
         }
 
@@ -166,7 +166,7 @@ namespace Game2048
             Board board = NewGame();
             //while (true) {
             Stopwatch sw = Stopwatch.StartNew();
-            for(int i=0; i<5; ++i){
+            for (int i = 0; i < 10; ++i) {
                 Board.Direction move = player.FindBestMove(board);
                 if (move == Board.Direction.None) break;
                 board.Slide(move);
