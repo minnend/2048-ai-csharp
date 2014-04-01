@@ -82,6 +82,32 @@ namespace Game2048
 
             b1 = new Board(1, 4, new int[] { 0, 0, 0, 2 });
             Debug.Assert(!b1.SlideDown());
+
+            // Test board rotation
+            b1 = new Board(3, 3, new int[] { 1, 2, 3,
+                                             4, 5, 6,
+                                             7, 8, 9 });
+            b2 = new Board(3, 3, new int[] { 7, 4, 1,
+                                             8, 5, 2,
+                                             9, 6, 3 });            
+            Debug.Assert(b1.GetRotated().Equals(b2));
+
+            // Test canonicalization
+            b1 = new Board(3, 3, new int[] { 1, 2, 3,
+                                             4, 5, 6,
+                                             7, 8, 9 });
+            b2 = new Board(3, 3, new int[] { 7, 4, 1,
+                                             8, 5, 2,
+                                             9, 6, 3 });
+            Debug.Assert(b1.GetCanonical().Equals(b2.GetCanonical()));
+
+            b1 = new Board(3, 3, new int[] { 0, 2, 0,
+                                             0, 0, 0,
+                                             0, 0, 2 });
+            b2 = new Board(3, 3, new int[] { 0, 2, 0,
+                                             0, 0, 0,
+                                             2, 0, 0 });
+            Debug.Assert(b1.GetCanonical().Equals(b2.GetCanonical()));
         }
 
         static Board NewGame()

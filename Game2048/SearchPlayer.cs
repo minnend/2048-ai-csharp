@@ -28,6 +28,7 @@ namespace Game2048
         public SearchInfo()
         {
             movesLeft = 0;
+            depth = 0;
             prob = 1.0;
             expectedScore = 0.0;
             firstDir = Board.Direction.None;
@@ -39,6 +40,7 @@ namespace Game2048
         {
             board = si.board.Dup();
             movesLeft = si.movesLeft;
+            depth = si.depth;
             prob = si.prob;
             expectedScore = si.expectedScore;
             firstDir = si.firstDir;
@@ -48,6 +50,7 @@ namespace Game2048
 
         public Board board;
         public int movesLeft;
+        public int depth;
         public double prob;
         public double expectedScore;
         public Board.Direction firstDir;
@@ -57,19 +60,6 @@ namespace Game2048
 
     class SearchPlayer
     {
-        public static void Shuffle<T>(IList<T> list)
-        {
-            Random rng = new Random();
-            int n = list.Count;
-            while (n > 1) {
-                n--;
-                int k = rng.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-            }
-        }
-
         public Board.Direction FindBestMove(Board startingBoard)
         {
             Console.WriteLine("----------------------------------------------------");
@@ -80,53 +70,78 @@ namespace Game2048
 
             SearchInfo root = new SearchInfo();
             root.board = startingBoard;
-            root.movesLeft = 3;
+            root.movesLeft = 30;
             root.expectedScore = EvalBoard(root.board);
 
             Queue<SearchInfo> Q = new Queue<SearchInfo>();
             Q.Enqueue(root);
 
-            while (Q.Count > 0) {
-                //if (sw.ElapsedMilliseconds > 250) break;
+            int maxDepthProcessed = 0;
+            MoveInfo bestMove = new MoveInfo(Board.Direction.None);
 
+            while (Q.Count > 0) {
                 SearchInfo parent = Q.Dequeue();
+
+                if (parent.depth > maxDepthProcessed) {
+                    maxDepthProcessed = parent.depth;
+                    if (!parent.moveNext)
+                        bestMove = FindBestMove(root);
+                    //Console.WriteLine("New depth: {0}  Just moved? {1}  Best Dir: {2}",
+                    //    maxDepthProcessed, parent.moveNext ? "no" : "yes",
+                    //    bestMove.dir);
+                }
+                
+                if (sw.ElapsedMilliseconds > 200) break;
+
                 if (parent.moveNext) { // make a move
                     if (parent.movesLeft <= 0) continue;
 
-                    //Console.WriteLine("Search score={0:0.000},  movesLeft={1}:",
-                    //    EvalBoard(parent.board), parent.movesLeft);
-                    //parent.board.Print();
-
                     List<Board.Direction> moves = parent.board.GetLegalMoves();
                     if (moves.Count == 0) {
-                        parent.expectedScore *= 0.1; // penalty for losing
+                        parent.expectedScore *= 0.01; // penalty for losing
                     }
                     else {
-                        Shuffle(moves);
+                        List<Board> uniqueBoards = new List<Board>();
+                        List<Board.Direction> uniqueMoves = new List<Board.Direction>();
                         foreach (Board.Direction dir in moves) {
+                            //Console.WriteLine("Possible Move: {0}", dir);
+                            Board b = parent.board.Dup();
+                            if (!b.Slide(dir)) continue;
+                            Board cb = b.GetCanonical();
+                            if (uniqueBoards.Contains(cb)) {
+                                //Console.WriteLine("Dup dir: {0}", dir);
+                                continue;
+                            }
+                            uniqueBoards.Add(cb);
+                            uniqueMoves.Add(dir);
+                        }                        
+
+                        foreach (Board.Direction dir in uniqueMoves) {
+                            //Console.WriteLine("Search Move: {0}", dir);
                             SearchInfo si = new SearchInfo(parent);
-                            if (!si.board.Slide(dir)) continue;
+                            si.board.Slide(dir);
                             si.expectedScore = EvalBoard(si.board);
                             if (si.firstDir == Board.Direction.None)
                                 si.firstDir = dir;
                             si.moveNext = false;
                             --si.movesLeft;
+                            ++si.depth;
                             parent.kids.Add(si);
                             Q.Enqueue(si);
-                        }
+                        }                        
                     }
                 }
                 else { // add random tile
                     List<Coord> avail = parent.board.GetAvailableTiles();
                     double prob2 = 0.9 / avail.Count;
-                    double prob4 = 0.1 / avail.Count;
-                    Shuffle(avail);
+                    double prob4 = 0.1 / avail.Count;                    
                     foreach (Coord coord in avail) {
                         // 90% chance of adding a 2
                         SearchInfo si = new SearchInfo(parent);
                         si.board.board[coord.y][coord.x] = 2;
                         si.prob *= prob2;
                         si.expectedScore = EvalBoard(si.board);
+                        ++si.depth;
                         si.moveNext = true;
                         parent.kids.Add(si);
                         Q.Enqueue(si);
@@ -136,6 +151,7 @@ namespace Game2048
                         si.board.board[coord.y][coord.x] = 4;
                         si.prob *= prob4;
                         si.expectedScore = EvalBoard(si.board);
+                        ++si.depth;
                         si.moveNext = true;
                         parent.kids.Add(si);
                         Q.Enqueue(si);
@@ -143,6 +159,17 @@ namespace Game2048
                 }
             }
 
+            Console.WriteLine("Move: {0}  (max depth: {1})", bestMove.dir, maxDepthProcessed);
+            Board fb = root.board.Dup();
+            fb.Slide(bestMove.dir);
+            fb.Print();
+            EvalBoard(fb, true);
+
+            return bestMove.dir;
+        }
+
+        protected MoveInfo FindBestMove(SearchInfo root)
+        {
             // find best move
             Dictionary<Board.Direction, MoveInfo> map = new Dictionary<Board.Direction, MoveInfo>();
             foreach (Board.Direction dir in Board.AllDirs)
@@ -153,19 +180,13 @@ namespace Game2048
                 MoveInfo mi = map[dir];
                 if (mi.count < 1) continue;
                 mi.score /= mi.wsum;
-                Console.WriteLine("dir={0}  count={1}  depth={2}  =>  {3:0.000}",
-                    dir, mi.count, mi.depth, mi.score);
+                //Console.WriteLine("dir={0}  count={1}  depth={2}  =>  {3:0.000}",
+                //    dir, mi.count, mi.depth, mi.score);
                 if (mi.score > bestMove.score)
                     bestMove = mi;
             }
 
-            Console.WriteLine("Move: {0}", bestMove.dir);
-            Board b = startingBoard.Dup();
-            b.Slide(bestMove.dir);
-            b.Print();
-            EvalBoard(b, true);
-
-            return bestMove.dir;
+            return bestMove;
         }
 
         protected void AccumDirInfo(SearchInfo node,
@@ -186,22 +207,21 @@ namespace Game2048
             }
         }
 
-        protected double EvalBoard(Board board, bool bPrint=false)
+        protected double EvalBoard(Board board, bool bPrint = false)
         {
             double a = (board.Score == 0 ? 0.0 : Math.Log(board.Score));
             double b = Math.Log(board.MaxTile);
-            double c = (double)board.NumAvailableTiles / board.NumTiles;
-
-            int maxMergeable = (board.Width - 1) * board.Height
-                + (board.Height - 1) * board.Width;
-            double d = (double)board.NumMergeablePairs / maxMergeable;
+            double c = board.NumAvailableTiles;
+            double d = board.NumMergeablePairs;
+            double e = (double)board.GetCanonical().GetCanonicalScore() / (board.MaxTile);
 
             if (bPrint)
-                Console.WriteLine("Eval: {0:0.00}, {1:0.00}, {2:0.00}, {3:0.00}", a, b, c, d);
+                Console.WriteLine("Eval: {0:0.00}, {1:0.00}, {2:0.00}, {3:0.00}, {4:0.00}", a, b, c, d, e);
             return 0.1 * a
-                + 0.4 * b
-                + 0.25 * c
-                + 0.25 * d;
+                + 0.1 * b
+                + 0.5 * c
+                + 0.1 * d
+                + 0.2 * e;
         }
     }
 }

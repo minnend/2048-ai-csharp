@@ -49,8 +49,8 @@ namespace Game2048
 
         public List<Direction> GetLegalMoves()
         {
-            List<Direction> legal = new List<Direction>();            
-            foreach(Direction dir in AllDirs)
+            List<Direction> legal = new List<Direction>();
+            foreach (Direction dir in AllDirs)
                 if (CanSlide(dir)) legal.Add(dir);
             return legal;
         }
@@ -68,7 +68,7 @@ namespace Game2048
                 case Direction.Down: return SlideDown();
                 case Direction.Left: return SlideLeft();
                 default: return false;
-            }            
+            }
         }
 
         public bool SlideRight()
@@ -137,7 +137,7 @@ namespace Game2048
         {
             bool bMoved = false;
             for (int x = 0; x < Width; ++x) {
-                int ybase = Height-1;
+                int ybase = Height - 1;
                 for (int y0 = Height - 2; y0 >= 0; --y0) {
                     int val = board[y0][x];
                     if (val == 0) continue;
@@ -239,7 +239,7 @@ namespace Game2048
 
         public override bool Equals(Object obj)
         {
-            return Equals(obj as Board);            
+            return Equals(obj as Board);
         }
 
         public override int GetHashCode()
@@ -251,12 +251,12 @@ namespace Game2048
                 for (int x = 0; x < Width; ++x)
                     hash = unchecked(hash * 17 + board[y][x]);
                 hash = hash * 3 + 11;
-            }            
+            }
             return hash;
         }
 
         public bool Equals(Board b)
-        {            
+        {
             if (b == null || b.Width != Width || b.Height != Height) return false;
             for (int y = 0; y < Height; ++y)
                 for (int x = 0; x < Width; ++x)
@@ -298,11 +298,78 @@ namespace Game2048
                     for (int x = 1; x < Width; ++x)
                         if (row[x - 1] == row[x]) ++n;
                 }
-                for (int x = 0; x < Width; ++x)              
+                for (int x = 0; x < Width; ++x)
                     for (int y = 1; y < Height; ++y)
-                        if (board[y - 1][x] == board[y][x]) ++n;                
+                        if (board[y - 1][x] == board[y][x]) ++n;
                 return n;
             }
+        }
+
+        public Board GetRotated()
+        {
+            Board b = Dup();
+            for (int y = 0; y < Height; ++y)
+                for (int x = 0; x < Width; ++x)
+                    b.board[y][x] = board[Width - x - 1][y];
+            return b;
+        }
+
+        public Board GetHorizontalReflection()
+        {
+            Board b = Dup();
+            for (int y = 0; y < Height; ++y)
+                for (int x = 0; x < Width; ++x)
+                    b.board[y][x] = board[y][Width - x - 1];
+            return b;
+        }
+
+        public Board GetVerticalReflection()
+        {
+            Board b = Dup();
+            for (int y = 0; y < Height; ++y)
+                for (int x = 0; x < Width; ++x)
+                    b.board[y][x] = board[Height - y - 1][x];
+            return b;
+        }
+
+        public double GetCanonicalScore()
+        {
+            double score = 0;
+            for (int y = 0; y < Height; ++y) {
+                int[] row = board[y];
+                for (int x = 0; x < Width; ++x)
+                    score += row[x] * (x + y * 1.1 + 1);
+            }
+            return score;
+        }
+
+        public Board GetCanonical()
+        {
+            Board best = null;
+            double bestScore = 0.0;
+
+            Board b = Dup();
+            for (int i = 0; i < 4; i++) {
+                double score = b.GetCanonicalScore();
+                if (score > bestScore) {
+                    best = b;
+                    bestScore = score;
+                }
+                Board c = b.GetHorizontalReflection();
+                score = c.GetCanonicalScore();
+                if (score > bestScore) {
+                    best = c;
+                    bestScore = score;
+                }
+                Board d = b.GetVerticalReflection();
+                score = d.GetCanonicalScore();
+                if (score > bestScore) {
+                    best = d;
+                    bestScore = score;
+                }
+                b = b.GetRotated();
+            }
+            return best;
         }
 
         public int Score { get { return score; } }
