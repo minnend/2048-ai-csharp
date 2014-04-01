@@ -164,17 +164,17 @@ namespace Game2048
         static void EvalSearchPlayer(SearchPlayer player)
         {
             Board board = NewGame();
-            while (true) {
-            //Stopwatch sw = Stopwatch.StartNew();
-            //for (int i = 0; i < 10; ++i) {
+            //while (true) {
+            Stopwatch sw = Stopwatch.StartNew();
+            for (int i = 0; i < 10; ++i) {
                 Board.Direction move = player.FindBestMove(board);
                 if (move == Board.Direction.None) break;
                 board.Slide(move);
                 board.AddRandomTile();
             }
-            //sw.Stop();
+            sw.Stop();
             Console.WriteLine("{0}  {1}", 1 << board.MaxTile, board.Score);
-            //Console.WriteLine("Time: {0:0.0}ms", sw.ElapsedMilliseconds);
+            Console.WriteLine("Time: {0:0.0}ms", sw.ElapsedMilliseconds);
             //if (iter % 1000 == 0) Console.WriteLine("{0}", iter);
 
             Console.WriteLine("Press <enter> to exit.");

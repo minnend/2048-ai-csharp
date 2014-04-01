@@ -62,8 +62,30 @@ namespace Game2048
         public List<SearchInfo> kids;
     }
 
+    class RandomTile
+    {
+        public RandomTile(int ix, int val)
+        {
+            this.ix = ix;
+            this.val = val;
+        }
+        public int ix, val;
+    }
+
     class SearchPlayer
     {
+        public static void Shuffle<T>(IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1) {
+                n--;
+                int k = Board.rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
         public Board.Direction FindBestMove(Board startingBoard)
         {
             Console.WriteLine("----------------------------------------------------");
@@ -129,12 +151,24 @@ namespace Game2048
                     }
                 }
                 else { // add random tile
-                    List<int> avail = parent.board.GetAvailableTiles();                    
+                    List<int> avail = parent.board.GetAvailableTiles();
+                    List<RandomTile> tiles = new List<RandomTile>();
+                    foreach (int ix in avail) {
+                        tiles.Add(new RandomTile(ix, 2));
+                        tiles.Add(new RandomTile(ix, 4));
+                    }
+                    //Shuffle(tiles);
+                    //int n = Math.Min(10, tiles.Count);
+                    int n = tiles.Count; // TODO
+
                     double prob2 = 0.9 / avail.Count;
                     double prob4 = 0.1 / avail.Count;
-                    foreach (int ix in avail) {
-                        Q.Enqueue(BuildChild(parent, ix, 1, prob2));
-                        Q.Enqueue(BuildChild(parent, ix, 2, prob4));
+                    for(int i=0; i<n; ++i){
+                        RandomTile rt = tiles[i];
+                        if (rt.val == 2)
+                            Q.Enqueue(BuildChild(parent, rt.ix, 1, prob2));
+                        else
+                            Q.Enqueue(BuildChild(parent, rt.ix, 2, prob4));
                     }
                 }
             }
