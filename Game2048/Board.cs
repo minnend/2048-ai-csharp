@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Game2048
 {
@@ -68,7 +69,13 @@ namespace Game2048
 
         public bool CanSlide(Direction dir)
         {
-            return Dup().Slide(dir);
+            switch (dir) {
+                case Direction.Up: return CanSlideUp();
+                case Direction.Right: return CanSlideRight();
+                case Direction.Down: return CanSlideDown();
+                case Direction.Left: return CanSlideLeft();
+                default: return false;
+            }
         }
 
         public bool Slide(Direction dir)
@@ -204,6 +211,62 @@ namespace Game2048
             }
 
             return bMoved;
+        }
+
+        public bool CanSlideRight()
+        {
+            for (int y = 0; y < Height; ++y) {
+                int ofs = y * Width;
+                int xbase = Width - 1;
+                for (int x0 = Width - 2; x0 >= 0; --x0) {
+                    int xofs = ofs + x0;
+                    byte val = board[xofs];
+                    if (val == 0) continue;
+                    byte val2 = board[xofs + 1];
+                    if (val2 == 0 || val2 == val) return true;
+                }
+            }
+            return false;
+        }
+
+        public bool CanSlideLeft()
+        {
+            for (int y = 0; y < Height; ++y) {
+                int ofs = y * Width;
+                for (int x0 = 1; x0 < Width; ++x0) {
+                    byte val = board[ofs + x0];
+                    if (val == 0) continue;
+                    byte val2 = board[ofs + x0 - 1];
+                    if (val2 == 0 || val2 == val) return true;
+                }
+            }
+            return false;
+        }
+
+        public bool CanSlideDown()
+        {
+            for (int x = 0; x < Width; ++x) {
+                for (int y0 = Height - 2; y0 >= 0; --y0) {
+                    byte val = board[y0 * Width + x];
+                    if (val == 0) continue;
+                    byte val2 = board[(y0 + 1) * Width + x];
+                    if (val2 == 0 || val2 == val) return true;
+                }
+            }
+            return false;
+        }
+
+        public bool CanSlideUp()
+        {
+            for (int x = 0; x < Width; ++x) {
+                for (int y0 = 1; y0 < Height; ++y0) {
+                    byte val = board[y0 * Width + x];
+                    if (val == 0) continue;
+                    byte val2 = board[(y0 - 1) * Width + x];
+                    if (val2 == 0 || val2 == val) return true;
+                }
+            }
+            return false;
         }
 
         public bool AddRandomTile()

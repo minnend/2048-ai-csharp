@@ -96,7 +96,7 @@ namespace Game2048
 
             SearchInfo root = new SearchInfo();
             root.board = startingBoard;
-            root.movesLeft = 30;
+            root.movesLeft = 3;
             root.expectedScore = EvalBoard(root.board);
 
             Queue<SearchInfo> Q = new Queue<SearchInfo>();
@@ -110,12 +110,12 @@ namespace Game2048
 
                 if (parent.depth > maxDepthProcessed) {
                     maxDepthProcessed = parent.depth;
-                    bestMove = FindBestMove(root);
+                    //bestMove = FindBestMove(root);
                 }
                 if (parent.isDead) continue;
                 if (parent.movesLeft <= 0) continue;
 
-                if (swTotal.ElapsedMilliseconds > 500) break;
+                //if (swTotal.ElapsedMilliseconds > 500) break;
 
                 if (parent.moveNext) { // make a move
                     List<Board.Direction> moves = parent.board.GetLegalMoves();
@@ -172,7 +172,7 @@ namespace Game2048
                     }
                 }
             }
-            //bestMove = FindBestMove(root);
+            bestMove = FindBestMove(root);
 
             Console.WriteLine("Move: {0}  (max depth: {1})", bestMove.dir, maxDepthProcessed);
             Board fb = root.board.Dup();

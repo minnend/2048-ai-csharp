@@ -18,69 +18,85 @@ namespace Game2048
             // Test SlideRight
             b1 = new Board(4, 1, new byte[] { 2, 2, 1, 1 });
             b2 = new Board(4, 1, new byte[] { 0, 0, 3, 2 });
+            Debug.Assert(b1.CanSlideRight());
             Debug.Assert(b1.SlideRight());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(4, 1, new byte[] { 1, 1, 1, 1 });
             b2 = new Board(4, 1, new byte[] { 0, 0, 2, 2 });
+            Debug.Assert(b1.CanSlideRight());
             Debug.Assert(b1.SlideRight());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(4, 1, new byte[] { 1, 2, 3, 4 });
+            Debug.Assert(!b1.CanSlideRight());
             Debug.Assert(!b1.SlideRight());
 
             b1 = new Board(4, 1, new byte[] { 0, 0, 0, 1 });
+            Debug.Assert(!b1.CanSlideRight());
             Debug.Assert(!b1.SlideRight());
 
             // Test SlideLeft
             b1 = new Board(4, 1, new byte[] { 1, 1, 2, 2 });
             b2 = new Board(4, 1, new byte[] { 2, 3, 0, 0 });
+            Debug.Assert(b1.CanSlideLeft());
             Debug.Assert(b1.SlideLeft());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(4, 1, new byte[] { 1, 1, 1, 1 });
             b2 = new Board(4, 1, new byte[] { 2, 2, 0, 0 });
+            Debug.Assert(b1.CanSlideLeft());
             Debug.Assert(b1.SlideLeft());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(4, 1, new byte[] { 1, 2, 3, 4 });
+            Debug.Assert(!b1.CanSlideLeft());
             Debug.Assert(!b1.SlideLeft());
 
             b1 = new Board(4, 1, new byte[] { 1, 0, 0, 0 });
+            Debug.Assert(!b1.CanSlideLeft());
             Debug.Assert(!b1.SlideLeft());
 
             // Test SlideUp
             b1 = new Board(1, 4, new byte[] { 1, 1, 2, 2 });
             b2 = new Board(1, 4, new byte[] { 2, 3, 0, 0 });
+            Debug.Assert(b1.CanSlideUp());
             Debug.Assert(b1.SlideUp());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(1, 4, new byte[] { 1, 1, 1, 1 });
             b2 = new Board(1, 4, new byte[] { 2, 2, 0, 0 });
+            Debug.Assert(b1.CanSlideUp());
             Debug.Assert(b1.SlideUp());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(1, 4, new byte[] { 1, 2, 3, 4 });
+            Debug.Assert(!b1.CanSlideUp());
             Debug.Assert(!b1.SlideUp());
 
             b1 = new Board(1, 4, new byte[] { 1, 0, 0, 0 });
+            Debug.Assert(!b1.CanSlideUp());
             Debug.Assert(!b1.SlideUp());
 
             // Test SlideDown
             b1 = new Board(1, 4, new byte[] { 2, 2, 1, 1 });
             b2 = new Board(1, 4, new byte[] { 0, 0, 3, 2 });
+            Debug.Assert(b1.CanSlideDown());
             Debug.Assert(b1.SlideDown());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(1, 4, new byte[] { 1, 1, 1, 1 });
             b2 = new Board(1, 4, new byte[] { 0, 0, 2, 2 });
+            Debug.Assert(b1.CanSlideDown());
             Debug.Assert(b1.SlideDown());
             Debug.Assert(b1.Equals(b2));
 
             b1 = new Board(1, 4, new byte[] { 1, 2, 3, 4 });
+            Debug.Assert(!b1.CanSlideDown());
             Debug.Assert(!b1.SlideDown());
 
             b1 = new Board(1, 4, new byte[] { 0, 0, 0, 1 });
+            Debug.Assert(!b1.CanSlideDown());
             Debug.Assert(!b1.SlideDown());
 
             // Test board rotation
@@ -164,8 +180,8 @@ namespace Game2048
         static void EvalSearchPlayer(SearchPlayer player)
         {
             Board board = NewGame();
-            //while (true) {
             Stopwatch sw = Stopwatch.StartNew();
+            //while (true) {            
             for (int i = 0; i < 10; ++i) {
                 Board.Direction move = player.FindBestMove(board);
                 if (move == Board.Direction.None) break;
