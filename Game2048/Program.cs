@@ -89,7 +89,7 @@ namespace Game2048
                                              7, 8, 9 });
             b2 = new Board(3, 3, new int[] { 7, 4, 1,
                                              8, 5, 2,
-                                             9, 6, 3 });            
+                                             9, 6, 3 });
             Debug.Assert(b1.GetRotated().Equals(b2));
 
             // Test canonicalization
@@ -159,21 +159,23 @@ namespace Game2048
                     if (iter % 1000 == 0) Console.WriteLine("{0}", iter);
                 }
             }
-        }        
+        }
 
         static void EvalSearchPlayer(SearchPlayer player)
         {
-            for (int iter = 0; iter < 1; ++iter) {
-                Board board = NewGame();
-                while (true) {
-                    Board.Direction move = player.FindBestMove(board);
-                    if (move == Board.Direction.None) break;
-                    board.Slide(move);
-                    board.AddRandomTile();
-                }
-                Console.WriteLine("{0}  {1}", board.MaxTile, board.Score);
-                //if (iter % 1000 == 0) Console.WriteLine("{0}", iter);
+            Board board = NewGame();
+            //while (true) {
+            Stopwatch sw = Stopwatch.StartNew();
+            for(int i=0; i<5; ++i){
+                Board.Direction move = player.FindBestMove(board);
+                if (move == Board.Direction.None) break;
+                board.Slide(move);
+                board.AddRandomTile();
             }
+            sw.Stop();
+            Console.WriteLine("{0}  {1}", board.MaxTile, board.Score);
+            Console.WriteLine("Time: {0:0.0}ms", sw.ElapsedMilliseconds);
+            //if (iter % 1000 == 0) Console.WriteLine("{0}", iter);
 
             Console.WriteLine("Press <enter> to exit.");
             Console.ReadLine();
@@ -185,7 +187,7 @@ namespace Game2048
 
             //PlayInteractive();
             //EvalRandomPlayer();
-            
+
             EvalSearchPlayer(new SearchPlayer());
         }
     }

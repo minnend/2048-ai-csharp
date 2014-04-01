@@ -10,9 +10,10 @@ namespace Game2048
         public enum Direction { Up, Right, Down, Left, None }
         public static Direction[] AllDirs = new Direction[] { Direction.Up, Direction.Right, Direction.Down, Direction.Left };
 
+        public static Random rng = new Random(1234);
+
         public Board(int w, int h)
         {
-            if (rng == null) rng = new Random();
             board = new int[h][];
             for (int i = 0; i < h; i++) board[i] = new int[w];
             score = 0;
@@ -382,6 +383,5 @@ namespace Game2048
 
         public int[][] board;
         protected int score;
-        protected static Random rng;
     }
 }
