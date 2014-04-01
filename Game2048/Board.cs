@@ -43,14 +43,12 @@ namespace Game2048
             }
         }
 
-        public List<Coord> GetAvailableTiles()
+        public List<int> GetAvailableTiles()
         {
-            List<Coord> tiles = new List<Coord>();
-            int ix = 0;
-            for (int y = 0; y < Height; ++y)
-                for (int x = 0; x < Width; ++x)
-                    if (board[ix++] == 0)
-                        tiles.Add(new Coord(x, y));
+            List<int> tiles = new List<int>();
+            for (int i = 0; i < NumTiles; ++i)
+                if (board[i] == 0)
+                    tiles.Add(i);
             return tiles;
         }
 
@@ -210,13 +208,12 @@ namespace Game2048
 
         public bool AddRandomTile()
         {
-            List<Coord> tiles = GetAvailableTiles();
+            List<int> tiles = GetAvailableTiles();
             if (tiles.Count == 0) return false;
 
             int r = rng.Next(tiles.Count);
-            Coord tile = tiles[r];
             byte value = (byte)(rng.NextDouble() < 0.9 ? 1 : 2);
-            board[tile.y * Width + tile.x] = value;
+            board[tiles[r]] = value;
             return true;
         }
 

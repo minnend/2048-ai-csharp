@@ -129,12 +129,12 @@ namespace Game2048
                     }
                 }
                 else { // add random tile
-                    List<Coord> avail = parent.board.GetAvailableTiles();
+                    List<int> avail = parent.board.GetAvailableTiles();
                     double prob2 = 0.9 / avail.Count;
                     double prob4 = 0.1 / avail.Count;
-                    foreach (Coord coord in avail) {
-                        Q.Enqueue(BuildChild(parent, coord, 1, prob2));
-                        Q.Enqueue(BuildChild(parent, coord, 2, prob4));
+                    foreach (int ix in avail) {
+                        Q.Enqueue(BuildChild(parent, ix, 1, prob2));
+                        Q.Enqueue(BuildChild(parent, ix, 2, prob4));
                     }
                 }
             }
@@ -149,10 +149,10 @@ namespace Game2048
             return bestMove.dir;
         }
 
-        protected SearchInfo BuildChild(SearchInfo parent, Coord coord, byte val, double prob)
+        protected SearchInfo BuildChild(SearchInfo parent, int ix, byte val, double prob)
         {
             SearchInfo si = new SearchInfo(parent);
-            si.board.board[coord.y * si.board.Width + coord.x] = val;
+            si.board.board[ix] = val;
             si.prob *= prob;
             si.expectedScore = EvalBoard(si.board);
             si.isDead = si.board.IsDead();
