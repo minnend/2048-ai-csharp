@@ -6,24 +6,6 @@ using System.Diagnostics;
 
 namespace Game2048
 {
-    class MoveInfo
-    {
-        public MoveInfo(Board.Direction dir)
-        {
-            this.dir = dir;
-            score = 0.0;
-            death = 0.0;
-            wsum = 0.0;
-            count = 0;
-            depth = 0;
-        }
-
-        public Board.Direction dir;
-        public double score, death, wsum;
-        public int count;
-        public int depth;
-    }
-
     class SearchInfo
     {
         public SearchInfo()
@@ -32,7 +14,8 @@ namespace Game2048
             depth = 0;
             prob = 1.0;
             expectedScore = 0.0;
-            firstDir = Board.Direction.None;
+            expectedDeath = 0.0;
+            dir = Board.Direction.None;
             moveNext = true;
             isDead = false;
             kids = new List<SearchInfo>();
@@ -45,7 +28,8 @@ namespace Game2048
             depth = si.depth;
             prob = si.prob;
             expectedScore = si.expectedScore;
-            firstDir = si.firstDir;
+            expectedDeath = si.expectedDeath;
+            dir = si.dir;
             moveNext = si.moveNext;
             isDead = si.isDead;
             kids = new List<SearchInfo>();
@@ -56,7 +40,8 @@ namespace Game2048
         public int depth;
         public double prob;
         public double expectedScore;
-        public Board.Direction firstDir;
+        public double expectedDeath;
+        public Board.Direction dir;
         public bool moveNext;
         public bool isDead;
         public List<SearchInfo> kids;
@@ -88,6 +73,8 @@ namespace Game2048
 
         public Board.Direction FindBestMove(Board startingBoard)
         {
+            if (startingBoard.IsDead()) return Board.Direction.None;
+
             Console.WriteLine("----------------------------------------------------");
             Console.WriteLine("Find Best Move:");
             startingBoard.Print();
@@ -97,16 +84,15 @@ namespace Game2048
             SearchInfo root = new SearchInfo();
             root.board = startingBoard;
             root.movesLeft = 3;
-            root.expectedScore = EvalBoard(root.board);
 
             Queue<SearchInfo> Q = new Queue<SearchInfo>();
             Q.Enqueue(root);
 
             int maxDepthProcessed = 0;
-            MoveInfo bestMove = new MoveInfo(Board.Direction.None);
-
+            int nProcessed = 0;
             while (Q.Count > 0) {
                 SearchInfo parent = Q.Dequeue();
+                ++nProcessed;
 
                 if (parent.depth > maxDepthProcessed) {
                     maxDepthProcessed = parent.depth;
@@ -138,14 +124,11 @@ namespace Game2048
                         //Console.WriteLine("Search Move: {0}", dir);
                         SearchInfo si = new SearchInfo(parent);
                         si.board.Slide(dir);
-                        si.expectedScore = EvalBoard(si.board);
-                        if (si.firstDir == Board.Direction.None)
-                            si.firstDir = dir;
+                        si.dir = dir;
                         si.moveNext = false;
                         --si.movesLeft;
                         ++si.depth;
                         si.isDead = si.board.IsDead();
-                        if (si.isDead) si.expectedScore *= 0.01; // penalty for dying
                         parent.kids.Add(si);
                         Q.Enqueue(si);
                     }
@@ -160,10 +143,9 @@ namespace Game2048
                     //Shuffle(tiles);
                     //int n = Math.Min(10, tiles.Count);
                     int n = tiles.Count; // TODO
-
-                    double prob2 = 0.9 / avail.Count;
-                    double prob4 = 0.1 / avail.Count;
-                    for(int i=0; i<n; ++i){
+                    double prob2 = 0.9 / n;
+                    double prob4 = 0.1 / n;
+                    for (int i = 0; i < n; ++i) {
                         RandomTile rt = tiles[i];
                         if (rt.val == 2)
                             Q.Enqueue(BuildChild(parent, rt.ix, 1, prob2));
@@ -172,15 +154,16 @@ namespace Game2048
                     }
                 }
             }
-            bestMove = FindBestMove(root);
+            //Console.WriteLine("#nodes: {0}", nProcessed);
+            Board.Direction bestDir = FindBestMove(root);
 
-            Console.WriteLine("Move: {0}  (max depth: {1})", bestMove.dir, maxDepthProcessed);
+            Console.WriteLine("Move: {0}  (max depth: {1})", bestDir, maxDepthProcessed);
             Board fb = root.board.Dup();
-            fb.Slide(bestMove.dir);
+            fb.Slide(bestDir);
             fb.Print();
             EvalBoard(fb, true);
 
-            return bestMove.dir;
+            return bestDir;
         }
 
         protected SearchInfo BuildChild(SearchInfo parent, int ix, byte val, double prob)
@@ -188,56 +171,80 @@ namespace Game2048
             SearchInfo si = new SearchInfo(parent);
             si.board.board[ix] = val;
             si.prob *= prob;
-            si.expectedScore = EvalBoard(si.board);
             si.isDead = si.board.IsDead();
-            if (si.isDead) si.expectedScore *= 0.01; // penalty for dying
+            si.dir = Board.Direction.None;
             ++si.depth;
             si.moveNext = true;
             parent.kids.Add(si);
             return si;
         }
 
-        protected MoveInfo FindBestMove(SearchInfo root)
+        protected Board.Direction FindBestMove(SearchInfo root)
         {
-            // find best move
-            Dictionary<Board.Direction, MoveInfo> map = new Dictionary<Board.Direction, MoveInfo>();
-            foreach (Board.Direction dir in Board.AllDirs)
-                map.Add(dir, new MoveInfo(dir));
-            AccumDirInfo(root, map);
-            MoveInfo bestMove = new MoveInfo(Board.Direction.None);
-            foreach (Board.Direction dir in Board.AllDirs) {
-                MoveInfo mi = map[dir];
-                if (mi.count < 1) continue;
-                mi.score /= mi.wsum;
-                mi.death /= mi.wsum;
-                //if (mi.depth >= 5)
-                //    Console.WriteLine("dir={0}  count={1}  depth={2}  death={3:0.000}  =>  {4:0.000}",
-                //        dir, mi.count, mi.depth, mi.death, mi.score);
-                if (bestMove.dir == Board.Direction.None
-                    || (mi.death < bestMove.death - 0.01)
-                    || (Math.Abs(mi.death - bestMove.death) < 0.01
-                        && mi.score > bestMove.score))
-                    bestMove = mi;
+            AccumDirInfo(root);
+            SearchInfo best = new SearchInfo();
+            foreach (SearchInfo si in root.kids) {
+                if (best.dir == Board.Direction.None
+                    || (si.expectedDeath < best.expectedDeath - 0.01)
+                    || (Math.Abs(si.expectedDeath - best.expectedDeath) < 0.01
+                        && si.expectedScore > best.expectedScore))
+                    best = si;
             }
-
-            return bestMove;
+            return best.dir;
         }
 
-        protected void AccumDirInfo(SearchInfo node,
-                                    Dictionary<Board.Direction, MoveInfo> map)
+        protected void AccumDirInfo(SearchInfo parent)
         {
-            if (node.kids.Count == 0) {
-                if (node.firstDir == Board.Direction.None) return;
-                MoveInfo mi = map[node.firstDir];
-                mi.score += node.expectedScore * node.prob;
-                if (node.isDead) mi.death += node.prob;
-                mi.wsum += node.prob;
-                mi.count++;
-                if (node.depth > mi.depth) mi.depth = node.depth;
+            //Console.WriteLine("Accum: depth={0}  dir={1}  prob={2}  kids={3}",
+            //    parent.depth, parent.dir, parent.prob, parent.kids.Count);
+            if (parent.isDead) {
+                Debug.Assert(parent.dir == Board.Direction.None);
+                Debug.Assert(parent.kids.Count == 0);
+                parent.expectedScore = EvalBoard(parent.board);
+                parent.expectedDeath = 1.0;
+                return;
             }
-            else {
-                foreach (SearchInfo kid in node.kids)
-                    AccumDirInfo(kid, map);
+
+            if (parent.kids.Count == 0) {
+                Debug.Assert(!parent.moveNext);
+                parent.expectedScore = EvalBoard(parent.board);                
+                return;
+            }
+
+            if (parent.moveNext) { // kids are result of a move
+                Debug.Assert(parent.dir == Board.Direction.None);
+                double expectedScore = 0.0;
+                double expectedDeath = 1.0;
+                Board.Direction bestDir = Board.Direction.None;
+                foreach (SearchInfo kid in parent.kids) {
+                    AccumDirInfo(kid);
+                    Debug.Assert(kid.dir != Board.Direction.None);
+                    if (bestDir == Board.Direction.None
+                        || kid.expectedDeath < expectedDeath
+                        || (Math.Abs(kid.expectedDeath - expectedDeath) < 0.001
+                            && kid.expectedScore > expectedScore)) {
+                        expectedScore = kid.expectedScore;
+                        expectedDeath = kid.expectedDeath;
+                        bestDir = kid.dir;
+                    }
+                }
+                Debug.Assert(bestDir != Board.Direction.None);
+                parent.dir = bestDir;
+                parent.expectedScore = expectedScore;
+                parent.expectedDeath = expectedDeath;
+            }
+            else { // kids are result of a random new tile
+                double expectedScore = 0.0;
+                double expectedDeath = 0.0;
+                double prob = 0.0;
+                foreach (SearchInfo kid in parent.kids) {
+                    AccumDirInfo(kid);
+                    prob += kid.prob;
+                    expectedScore += kid.expectedScore * kid.prob;
+                    expectedDeath += kid.expectedDeath * kid.prob;
+                }
+                parent.expectedScore = expectedScore / prob;
+                parent.expectedDeath = expectedDeath / prob;
             }
         }
 

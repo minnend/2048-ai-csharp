@@ -30,7 +30,9 @@ namespace Game2048
 
         public bool HasOpenTiles()
         {
-            return (NumAvailableTiles > 0);
+            for (int i = 0; i < NumTiles; ++i)
+                if (board[i] == 0) return true;
+            return false;
         }
 
         public int NumAvailableTiles

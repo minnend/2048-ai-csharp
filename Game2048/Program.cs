@@ -124,6 +124,16 @@ namespace Game2048
                                               0, 0, 0,
                                               2, 0, 0 });
             Debug.Assert(b1.GetCanonical().Equals(b2.GetCanonical()));
+
+            b1 = new Board(4, 4, new byte[] { 0, 0, 0, 0,
+                                              0, 0, 4, 2,
+                                              0, 0, 0, 0,
+                                              0, 0, 0, 0});
+            b2 = new Board(4, 4, new byte[] { 0, 0, 0, 0,
+                                              4, 2, 0, 0,
+                                              0, 0, 0, 0,
+                                              0, 0, 0, 0});
+            Debug.Assert(!b1.GetCanonical().Equals(b2.GetCanonical()));
         }
 
         static Board NewGame()
@@ -181,12 +191,12 @@ namespace Game2048
         {
             Board board = NewGame();
             Stopwatch sw = Stopwatch.StartNew();
-            //while (true) {            
-            for (int i = 0; i < 10; ++i) {
+            while (true) {
+            //for (int i = 0; i < 10; ++i) {
                 Board.Direction move = player.FindBestMove(board);
                 if (move == Board.Direction.None) break;
                 board.Slide(move);
-                board.AddRandomTile();
+                board.AddRandomTile();                
             }
             sw.Stop();
             Console.WriteLine("{0}  {1}", 1 << board.MaxTile, board.Score);
