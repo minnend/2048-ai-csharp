@@ -134,23 +134,14 @@ namespace Game2048
                     }
                 }
                 else { // add random tile
-                    List<int> avail = parent.board.GetAvailableTiles();
-                    List<RandomTile> tiles = new List<RandomTile>();
-                    foreach (int ix in avail) {
-                        tiles.Add(new RandomTile(ix, 2));
-                        tiles.Add(new RandomTile(ix, 4));
-                    }
-                    //Shuffle(tiles);
-                    //int n = Math.Min(10, tiles.Count);
-                    int n = tiles.Count; // TODO
-                    double prob2 = 0.9 / n;
-                    double prob4 = 0.1 / n;
-                    for (int i = 0; i < n; ++i) {
-                        RandomTile rt = tiles[i];
-                        if (rt.val == 2)
-                            Q.Enqueue(BuildChild(parent, rt.ix, 1, prob2));
-                        else
-                            Q.Enqueue(BuildChild(parent, rt.ix, 2, prob4));
+                    BuildSuccessors(parent);
+
+                    List<int> avail = parent.board.GetAvailableTiles();                    
+                    double prob2 = 0.9 / avail.Count;
+                    double prob4 = 0.1 / avail.Count;
+                    for (int i = 0; i < avail.Count; ++i) {
+                        Q.Enqueue(BuildChild(parent, avail[i], 1, prob2));
+                        Q.Enqueue(BuildChild(parent, avail[i], 2, prob4));
                     }
                 }
             }
@@ -164,6 +155,55 @@ namespace Game2048
             EvalBoard(fb, true);
 
             return bestDir;
+        }
+
+        protected List<SearchInfo> BuildSuccessors(SearchInfo parent)
+        {
+            List<int> avail = parent.board.GetAvailableTiles();
+            double prob2 = 0.9 / avail.Count;
+            double prob4 = 0.1 / avail.Count;
+
+            Console.WriteLine("Parent Board:");
+            parent.board.Print();
+            Console.WriteLine();
+
+            Dictionary<Board, SearchInfo> map = new Dictionary<Board, SearchInfo>();
+            int nTotal = 0;
+            for (int i = 0; i < avail.Count; ++i) {
+                Board baseBoard = parent.board.Dup();
+                baseBoard.board[avail[i]] = 1;
+                Console.WriteLine("Base Board:");
+                baseBoard.Print();
+                Console.WriteLine();
+
+                List<Board.Direction> moves = baseBoard.GetLegalMoves();
+                nTotal += moves.Count;
+                foreach (Board.Direction dir in moves) {                    
+                    Board b = baseBoard.Dup();
+                    b.Slide(dir);
+                    Console.WriteLine("Slide: " + dir);
+                    b.Print();
+                    Console.WriteLine();
+                    if (map.ContainsKey(b)) {
+                        SearchInfo si = map[b];
+                        if (si.dir != dir) {                            
+                            Console.WriteLine("{0} vs. {1}", si.dir, dir);
+                        }
+                        Debug.Assert(si.dir == dir);
+                    }
+                    else{
+                        SearchInfo si = new SearchInfo(parent);
+                        si.board = b;
+                        si.dir = dir;
+                        --si.movesLeft;
+                        ++si.depth;
+                        si.isDead = si.board.IsDead();
+                        map.Add(b, si);
+                    }
+                }                
+            }
+
+            return null; // TODO
         }
 
         protected SearchInfo BuildChild(SearchInfo parent, int ix, byte val, double prob)
@@ -207,7 +247,7 @@ namespace Game2048
 
             if (parent.kids.Count == 0) {
                 Debug.Assert(!parent.moveNext);
-                parent.expectedScore = EvalBoard(parent.board);                
+                parent.expectedScore = EvalBoard(parent.board);
                 return;
             }
 

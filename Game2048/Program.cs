@@ -36,6 +36,10 @@ namespace Game2048
             Debug.Assert(!b1.CanSlideRight());
             Debug.Assert(!b1.SlideRight());
 
+            b1 = new Board(2, 2, new byte[] { 1, 2, 0, 0 });
+            Debug.Assert(!b1.CanSlideRight());
+            Debug.Assert(!b1.SlideRight());
+
             // Test SlideLeft
             b1 = new Board(4, 1, new byte[] { 1, 1, 2, 2 });
             b2 = new Board(4, 1, new byte[] { 2, 3, 0, 0 });
@@ -54,6 +58,10 @@ namespace Game2048
             Debug.Assert(!b1.SlideLeft());
 
             b1 = new Board(4, 1, new byte[] { 1, 0, 0, 0 });
+            Debug.Assert(!b1.CanSlideLeft());
+            Debug.Assert(!b1.SlideLeft());
+
+            b1 = new Board(2, 2, new byte[] { 1, 2, 0, 0 });
             Debug.Assert(!b1.CanSlideLeft());
             Debug.Assert(!b1.SlideLeft());
 
@@ -78,6 +86,10 @@ namespace Game2048
             Debug.Assert(!b1.CanSlideUp());
             Debug.Assert(!b1.SlideUp());
 
+            b1 = new Board(2, 2, new byte[] { 1, 0, 2, 0 });
+            Debug.Assert(!b1.CanSlideUp());
+            Debug.Assert(!b1.SlideUp());
+
             // Test SlideDown
             b1 = new Board(1, 4, new byte[] { 2, 2, 1, 1 });
             b2 = new Board(1, 4, new byte[] { 0, 0, 3, 2 });
@@ -96,6 +108,10 @@ namespace Game2048
             Debug.Assert(!b1.SlideDown());
 
             b1 = new Board(1, 4, new byte[] { 0, 0, 0, 1 });
+            Debug.Assert(!b1.CanSlideDown());
+            Debug.Assert(!b1.SlideDown());
+
+            b1 = new Board(2, 2, new byte[] { 1, 0, 2, 0 });
             Debug.Assert(!b1.CanSlideDown());
             Debug.Assert(!b1.SlideDown());
 
@@ -191,8 +207,8 @@ namespace Game2048
         {
             Board board = NewGame();
             Stopwatch sw = Stopwatch.StartNew();
-            while (true) {
-            //for (int i = 0; i < 10; ++i) {
+            //while (true) {
+            for (int i = 0; i < 10; ++i) {
                 Board.Direction move = player.FindBestMove(board);
                 if (move == Board.Direction.None) break;                
                 board.Slide(move);
