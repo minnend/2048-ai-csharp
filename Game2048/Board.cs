@@ -326,7 +326,7 @@ namespace Game2048
             hash = hash * 19 + Height;
             for (int i = 0; i < NumTiles; ++i) {
                 hash = unchecked(hash * 17 + board[i]);
-                hash = hash * 3 + 11;
+                hash = unchecked(hash * 3 + 11);
             }
             return hash;
         }
