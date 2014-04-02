@@ -433,18 +433,14 @@ namespace Game2048
                     best = b;
                     bestScore = score;
                 }
+
                 Board c = b.GetHorizontalReflection();
                 score = c.GetCanonicalScore();
                 if (score > bestScore) {
                     best = c;
                     bestScore = score;
                 }
-                Board d = b.GetVerticalReflection();
-                score = d.GetCanonicalScore();
-                if (score > bestScore) {
-                    best = d;
-                    bestScore = score;
-                }
+
                 b = b.GetRotated();
             }
             return best;
