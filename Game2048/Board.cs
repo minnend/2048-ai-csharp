@@ -219,7 +219,6 @@ namespace Game2048
         {
             for (int y = 0; y < Height; ++y) {
                 int ofs = y * Width;
-                int xbase = Width - 1;
                 for (int x0 = Width - 2; x0 >= 0; --x0) {
                     int xofs = ofs + x0;
                     byte val = board[xofs];

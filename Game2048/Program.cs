@@ -194,11 +194,13 @@ namespace Game2048
             while (true) {
             //for (int i = 0; i < 10; ++i) {
                 Board.Direction move = player.FindBestMove(board);
-                if (move == Board.Direction.None) break;
+                if (move == Board.Direction.None) break;                
                 board.Slide(move);
                 board.AddRandomTile();                
             }
             sw.Stop();
+            Console.WriteLine("Final Board:");
+            board.Print();
             Console.WriteLine("{0}  {1}", 1 << board.MaxTile, board.Score);
             Console.WriteLine("Time: {0:0.0}ms", sw.ElapsedMilliseconds);
             //if (iter % 1000 == 0) Console.WriteLine("{0}", iter);
