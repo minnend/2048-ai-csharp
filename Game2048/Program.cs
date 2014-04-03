@@ -207,8 +207,8 @@ namespace Game2048
         {
             Board board = NewGame();
             Stopwatch sw = Stopwatch.StartNew();
-            //while (true) {
-            for (int i = 0; i < 10; ++i) {
+            while (true) {
+            //for (int i = 0; i < 10; ++i) {
                 Board.Direction move = player.FindBestMove(board);
                 if (move == Board.Direction.None) break;                
                 board.Slide(move);

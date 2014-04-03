@@ -8,7 +8,7 @@ namespace Game2048
 {
     class Board
     {
-        public enum Direction { Up, Right, Down, Left, None }
+        public enum Direction { None=-1, Up=0, Right, Down, Left }
         public static Direction[] AllDirs = new Direction[] { Direction.Up, Direction.Right, Direction.Down, Direction.Left };
 
         public static Random rng = new Random(1234); // TODO 
@@ -20,12 +20,13 @@ namespace Game2048
             NumTiles = Width * Height;
             board = new byte[NumTiles];
             score = 0;
+            hashCode = 0;
         }
 
         public Board(int w, int h, byte[] data)
             : this(w, h)
         {
-            Array.Copy(data, board, NumTiles);
+            Array.Copy(data, board, NumTiles);            
         }
 
         public bool HasOpenTiles()
@@ -116,6 +117,7 @@ namespace Game2048
                     break;
                 }
             }
+            if (bMoved) hashCode = 0;
             return bMoved;
         }
 
@@ -152,6 +154,7 @@ namespace Game2048
                     break;
                 }
             }
+            if (bMoved) hashCode = 0;
             return bMoved;
         }
 
@@ -188,6 +191,7 @@ namespace Game2048
                     break;
                 }
             }
+            if (bMoved) hashCode = 0;
             return bMoved;
         }
 
@@ -224,6 +228,7 @@ namespace Game2048
                     break;
                 }
             }
+            if (bMoved) hashCode = 0;
             return bMoved;
         }
 
@@ -298,6 +303,7 @@ namespace Game2048
             int r = rng.Next(tiles.Count);
             byte value = (byte)(rng.NextDouble() < 0.9 ? 1 : 2);
             board[tiles[r]] = value;
+            hashCode = 0;
             return true;
         }
 
@@ -315,6 +321,7 @@ namespace Game2048
             NumTiles = other.NumTiles;
             Array.Copy(other.board, board, NumTiles);
             score = other.score;
+            hashCode = other.hashCode;
             return this;
         }
 
@@ -334,24 +341,28 @@ namespace Game2048
         }
 
         public override bool Equals(Object obj)
-        {
+        {            
             return Equals(obj as Board);
         }
 
         public override int GetHashCode()
         {
-            int hash = 11;
-            hash = hash * 17 + Width;
-            hash = hash * 19 + Height;
+            if (hashCode > 0) return hashCode;
+
+            int hash = 1;
+            hash = hash * 5 + Width;
+            hash = hash * 11 + Height;
             for (int i = 0; i < NumTiles; ++i) {
-                hash = unchecked(hash * 17 + board[i]);
-                hash = unchecked(hash * 3 + 11);
+                hash = unchecked(hash * 7 + board[i]);
+                hash = unchecked(hash * 3 + 5);
             }
+            hashCode = hash;
             return hash;
         }
 
         public bool Equals(Board b)
         {
+            if (this == b) return true;
             if (b == null || b.Width != Width || b.Height != Height) return false;
             for (int i = 0; i < NumTiles; ++i)
                 if (board[i] != b.board[i]) return false;
@@ -402,10 +413,10 @@ namespace Game2048
         public Board GetRotated()
         {
             Board b = Dup();
-            for (int y = 0; y < Height; ++y) {
+            for (int y = 0; y < Height; ++y)
                 for (int x = 0; x < Width; ++x)
                     b.board[y * Width + x] = board[(Width - x - 1) * Width + y];
-            }
+            b.hashCode = 0;
             return b;
         }
 
@@ -417,6 +428,7 @@ namespace Game2048
                 for (int x = 0; x < Width; ++x)
                     b.board[ofs + x] = board[ofs + Width - x - 1];
             }
+            b.hashCode = 0;
             return b;
         }
 
@@ -426,6 +438,7 @@ namespace Game2048
             for (int y = 0; y < Height; ++y)
                 for (int x = 0; x < Width; ++x)
                     b.board[y * Width + x] = board[(Height - y - 1) * Width + x];
+            b.hashCode = 0;
             return b;
         }
 
@@ -465,11 +478,18 @@ namespace Game2048
             return best;
         }
 
+        public void AddTile(int ix, byte val)
+        {
+            board[ix] = val;
+            hashCode = 0;
+        }
+
         public int Score { get { return score; } }
 
         public int Width, Height;
-        public int NumTiles;
+        public int NumTiles;        
         public byte[] board;
         protected int score;
+        private int hashCode;
     }
 }
