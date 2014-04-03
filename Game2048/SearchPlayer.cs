@@ -109,7 +109,7 @@ namespace Game2048
             // seed search with possible moves from starting board
             SearchInfo root = new SearchInfo();
             root.board = startingBoard;
-            root.movesLeft = 3;
+            root.movesLeft = 30;
             if (GenPostMoveBoards(root) < 1) return Board.Direction.None;
 
             Queue<SearchInfo> Q = new Queue<SearchInfo>();
@@ -119,17 +119,17 @@ namespace Game2048
             int maxDepthProcessed = 0;
             int nProcessed = 1;
             while (Q.Count > 0) {
+                if (swTotal.ElapsedMilliseconds > 100) break;
                 SearchInfo parent = Q.Dequeue();
                 ++nProcessed;
 
                 if (parent.depth > maxDepthProcessed) {
                     maxDepthProcessed = parent.depth;
-                    //bestMove = FindBestMove(root);
+                    //Console.WriteLine("New depth: {0}  ({1:0.0}ms)",
+                    //    maxDepthProcessed, swTotal.ElapsedMilliseconds);                    
                 }
                 if (parent.isDead) continue;
-                if (parent.movesLeft <= 0) continue;
-
-                //if (swTotal.ElapsedMilliseconds > 500) break;
+                if (parent.movesLeft <= 0) continue;                
 
                 BuildSuccessors(parent);
                 foreach (SearchInfo si in parent.kids)
@@ -168,23 +168,24 @@ namespace Game2048
 
         protected bool BuildSuccessors(SearchInfo parent, List<int> avail,
             Board.Direction dir, byte val, double prob)
-        {            
-            int nTested = 0;
+        {                        
             Dictionary<Board, SearchInfo> uniqueBoards = new Dictionary<Board, SearchInfo>();
             foreach (int ix in avail) {
                 SearchInfo si = new SearchInfo(parent);
                 si.board.AddTile(ix, val);
-                //Console.WriteLine("Random Tile:");
-                //si.board.Print();
-                if (!si.board.Slide(dir)) continue;
-
-                ++nTested;
-
                 ++si.depth;
                 --si.movesLeft;
-                si.isDead = si.board.IsDead();
                 si.dir = dir;
                 si.prob = prob;
+
+                //Console.WriteLine("Random Tile:");
+                //si.board.Print();
+                if (!si.board.Slide(dir)) {
+                    if (!si.board.IsDead()) continue;
+                    //si.dir = Board.Direction.None; // TODO
+                    si.isDead = true;
+                }
+                else Debug.Assert(!si.board.IsDead());
                 Board canonical = si.board.GetCanonical();
 
                 //Console.WriteLine("Board ({0}):", dir);
@@ -198,8 +199,7 @@ namespace Game2048
                     uniqueBoards.Add(canonical, si);
                     parent.kids.Add(si);
                 }
-            }
-            //Console.WriteLine("Kept ({0},{1}): {2} / {3}", dir, 2*val, uniqueBoards.Count, nTested);
+            }            
             return true;
         }
 
@@ -208,7 +208,7 @@ namespace Game2048
             //Console.WriteLine("Accum: depth={0}  dir={1}  prob={2}  kids={3}",
             //    parent.depth, parent.dir, parent.prob, parent.kids.Count);
             if (parent.isDead) {
-                Debug.Assert(parent.dir == Board.Direction.None);
+                //Debug.Assert(parent.dir == Board.Direction.None);
                 Debug.Assert(parent.kids.Count == 0);
                 parent.expectedScore = EvalBoard(parent.board);
                 parent.expectedDeath = 1.0;
@@ -279,16 +279,18 @@ namespace Game2048
             double a = (board.Score == 0 ? 0.0 : Math.Log(board.Score));
             double b = board.MaxTile;
             double c = board.NumAvailableTiles;
-            double d = board.NumMergeablePairs;
-            double e = Math.Log(board.GetCanonical().GetCanonicalScore());
+            //double d = board.NumMergeablePairs;
+            //double e = Math.Log(board.GetCanonical().GetCanonicalScore());
+            double f = Math.Log(board.SmoothnessCost + 1);
 
-            if (bPrint)
-                Console.WriteLine("Eval: {0:0.00}, {1:0.00}, {2:0.00}, {3:0.00}, {4:0.00}", a, b, c, d, e);
-            return 0.1 * a
-                + 0.3 * b
-                + 0.1 * c
-                + 0.1 * d
-                + 0.4 * e;
+            //if (bPrint)
+            //    Console.WriteLine("Eval: {0:0.00}, {1:0.00}, {2:0.00}, {3:0.00}, {4:0.00}, {5:0.00}", a, b, c, d, e, f);
+            return 0.2 * a
+                + 0.5 * b
+                + 0.3 * c
+                //+ 0.1 * d
+                //+ 0.3 * e
+                - 2.0 * f;
         }
     }
 }

@@ -410,6 +410,31 @@ namespace Game2048
             }
         }
 
+        public int SmoothnessCost
+        {
+            get
+            {
+                int smoothness = 0;
+                for (int y = 0; y < Height; ++y) {
+                    int ofs = y * Width;
+                    for (int x = 1; x < Width; ++x) {
+                        int v1 = board[ofs + x - 1];
+                        int v2 = board[ofs + x];
+                        if (v1 > 0 & v2 > 0) smoothness += Math.Abs(v1 - v2);
+                    }
+                }
+                for (int y = 1; y < Height; ++y) {
+                    int ofs = y * Width;
+                    for (int x = 0; x < Width; ++x) {
+                        int v1 = board[ofs + x - Width];
+                        int v2 = board[ofs + x];
+                        if (v1 > 0 & v2 > 0) smoothness += Math.Abs(v1 - v2);
+                    }
+                }
+                return smoothness;
+            }
+        }
+
         public Board GetRotated()
         {
             Board b = Dup();
