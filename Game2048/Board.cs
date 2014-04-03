@@ -91,127 +91,147 @@ namespace Game2048
             }
         }
 
+        public bool SlideRight(int y)
+        {
+            bool bMoved = false;
+            int ofs = y * Width;
+            int xbase = Width - 1;
+            for (int x0 = Width - 2; x0 >= 0; --x0) {
+                byte val = board[ofs + x0];
+                if (val == 0) continue;
+                for (int x = x0 + 1; x <= xbase; ++x) {
+                    if (board[ofs + x] == 0) {
+                        bMoved = true;
+                        board[ofs + x] = val;
+                        board[ofs + x - 1] = 0;
+                        continue;
+                    }
+                    if (board[ofs + x] == val) {
+                        bMoved = true;
+                        ++board[ofs + x];
+                        score += (1 << board[ofs + x]);
+                        xbase = x - 1;
+                        board[ofs + x - 1] = 0;
+                    }
+                    break;
+                }
+            }
+            return bMoved;
+        }
+
         public bool SlideRight()
         {
             bool bMoved = false;
-            for (int y = 0; y < Height; ++y) {
-                int ofs = y * Width;
-                int xbase = Width - 1;
-                for (int x0 = Width - 2; x0 >= 0; --x0) {
-                    byte val = board[ofs + x0];
-                    if (val == 0) continue;
-                    for (int x = x0 + 1; x <= xbase; ++x) {
-                        if (board[ofs + x] == 0) {
-                            bMoved = true;
-                            board[ofs + x] = val;
-                            board[ofs + x - 1] = 0;
-                            continue;
-                        }
-                        if (board[ofs + x] == val) {
-                            bMoved = true;
-                            ++board[ofs + x];
-                            score += (1 << board[ofs + x]);
-                            xbase = x - 1;
-                            board[ofs + x - 1] = 0;
-                        }
-                        break;
+            for (int y = 0; y < Height; ++y)
+                bMoved |= SlideRight(y);
+            return bMoved;
+        }
+
+        public bool SlideLeft(int y)
+        {
+            bool bMoved = false;
+            int ofs = y * Width;
+            int xbase = 0;
+            for (int x0 = 1; x0 < Width; ++x0) {
+                byte val = board[ofs + x0];
+                if (val == 0) continue;
+                for (int x = x0 - 1; x >= xbase; --x) {
+                    if (board[ofs + x] == 0) {
+                        bMoved = true;
+                        board[ofs + x] = val;
+                        board[ofs + x + 1] = 0;
+                        continue;
                     }
+                    if (board[ofs + x] == val) {
+                        bMoved = true;
+                        ++board[ofs + x];
+                        score += (1 << board[ofs + x]);
+                        xbase = x + 1;
+                        board[ofs + x + 1] = 0;
+                    }
+                    break;
                 }
             }
-
             return bMoved;
         }
 
         public bool SlideLeft()
         {
             bool bMoved = false;
-            for (int y = 0; y < Height; ++y) {
-                int ofs = y * Width;
-                int xbase = 0;
-                for (int x0 = 1; x0 < Width; ++x0) {
-                    byte val = board[ofs + x0];
-                    if (val == 0) continue;
-                    for (int x = x0 - 1; x >= xbase; --x) {
-                        if (board[ofs + x] == 0) {
-                            bMoved = true;
-                            board[ofs + x] = val;
-                            board[ofs + x + 1] = 0;
-                            continue;
-                        }
-                        if (board[ofs + x] == val) {
-                            bMoved = true;
-                            ++board[ofs + x];
-                            score += (1 << board[ofs + x]);
-                            xbase = x + 1;
-                            board[ofs + x + 1] = 0;
-                        }
-                        break;
+            for (int y = 0; y < Height; ++y)
+                bMoved |= SlideLeft(y);
+            return bMoved;
+        }
+
+        public bool SlideDown(int x)
+        {
+            bool bMoved = false;
+            int ybase = Height - 1;
+            for (int y0 = Height - 2; y0 >= 0; --y0) {
+                byte val = board[y0 * Width + x];
+                if (val == 0) continue;
+                for (int y = y0 + 1; y <= ybase; ++y) {
+                    int ofs = y * Width + x;
+                    if (board[ofs] == 0) {
+                        bMoved = true;
+                        board[ofs] = val;
+                        board[ofs - Width] = 0;
+                        continue;
                     }
+                    if (board[ofs] == val) {
+                        bMoved = true;
+                        ++board[ofs];
+                        score += (1 << board[ofs]);
+                        ybase = y - 1;
+                        board[ofs - Width] = 0;
+                    }
+                    break;
                 }
             }
-
             return bMoved;
         }
 
         public bool SlideDown()
         {
             bool bMoved = false;
-            for (int x = 0; x < Width; ++x) {
-                int ybase = Height - 1;
-                for (int y0 = Height - 2; y0 >= 0; --y0) {
-                    byte val = board[y0 * Width + x];
-                    if (val == 0) continue;
-                    for (int y = y0 + 1; y <= ybase; ++y) {
-                        int ofs = y * Width + x;
-                        if (board[ofs] == 0) {
-                            bMoved = true;
-                            board[ofs] = val;
-                            board[ofs - Width] = 0;
-                            continue;
-                        }
-                        if (board[ofs] == val) {
-                            bMoved = true;
-                            ++board[ofs];
-                            score += (1 << board[ofs]);
-                            ybase = y - 1;
-                            board[ofs - Width] = 0;
-                        }
-                        break;
+            for (int x = 0; x < Width; ++x)
+                bMoved |= SlideDown(x);
+            return bMoved;
+        }
+
+        public bool SlideUp(int x)
+        {
+            bool bMoved = false;
+            int ybase = 0;
+            for (int y0 = 1; y0 < Height; ++y0) {
+                byte val = board[y0 * Width + x];
+                if (val == 0) continue;
+                for (int y = y0 - 1; y >= ybase; --y) {
+                    int ofs = y * Width + x;
+                    if (board[ofs] == 0) {
+                        bMoved = true;
+                        board[ofs] = val;
+                        board[ofs + Width] = 0;
+                        continue;
                     }
+                    if (board[ofs] == val) {
+                        bMoved = true;
+                        ++board[ofs];
+                        score += (1 << board[ofs]);
+                        ybase = y + 1;
+                        board[ofs + Width] = 0;
+                    }
+                    break;
                 }
             }
-
             return bMoved;
         }
 
         public bool SlideUp()
         {
             bool bMoved = false;
-            for (int x = 0; x < Width; ++x) {
-                int ybase = 0;
-                for (int y0 = 1; y0 < Height; ++y0) {
-                    byte val = board[y0 * Width + x];
-                    if (val == 0) continue;
-                    for (int y = y0 - 1; y >= ybase; --y) {
-                        int ofs = y * Width + x;
-                        if (board[ofs] == 0) {
-                            bMoved = true;
-                            board[ofs] = val;
-                            board[ofs + Width] = 0;
-                            continue;
-                        }
-                        if (board[ofs] == val) {
-                            bMoved = true;
-                            ++board[ofs];
-                            score += (1 << board[ofs]);
-                            ybase = y + 1;
-                            board[ofs + Width] = 0;
-                        }
-                        break;
-                    }
-                }
-            }
-
+            for (int x = 0; x < Width; ++x)
+                bMoved |= SlideUp(x);
             return bMoved;
         }
 
