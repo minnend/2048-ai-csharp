@@ -505,6 +505,7 @@ namespace Game2048
 
         public void AddTile(int ix, byte val)
         {
+            Debug.Assert(board[ix] == 0);
             board[ix] = val;
             hashCode = 0;
         }
